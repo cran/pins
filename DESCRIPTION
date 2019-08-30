@@ -1,7 +1,7 @@
 Package: pins
 Type: Package
 Title: Pin, Discover and Share Resources
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person("Javier", "Luraschi", email = "javier@rstudio.com", role = c("aut", "cre")),
     person(family = "RStudio", role = c("cph"))
@@ -9,7 +9,7 @@ Authors@R: c(
 Maintainer: Javier Luraschi <javier@rstudio.com>
 Description: Pin remote resources into a local cache to work offline,
   improve speed and avoid recomputing; discover and share resources
-  with others in 'GitHub', 'Kaggle' or 'RStudio Connect'. Resources can
+  in local folders, 'GitHub', 'Kaggle' or 'RStudio Connect'. Resources can 
   be anything from 'CSV', 'JSON', or image files to arbitrary R objects.
 License: Apache License 2.0
 Encoding: UTF-8
@@ -22,8 +22,8 @@ VignetteBuilder: knitr
 URL: https://github.com/rstudio/pins
 BugReports: https://github.com/rstudio/pins/issues
 NeedsCompilation: no
-Packaged: 2019-08-28 06:38:33 UTC; javierluraschi
+Packaged: 2019-08-30 06:08:28 UTC; javierluraschi
 Author: Javier Luraschi [aut, cre],
   RStudio [cph]
 Repository: CRAN
-Date/Publication: 2019-08-28 11:30:02 UTC
+Date/Publication: 2019-08-30 16:40:02 UTC

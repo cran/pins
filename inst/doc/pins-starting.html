@@ -397,13 +397,16 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 </div>
 <div id="sharing" class="section level2">
 <h2>Sharing</h2>
-<p>After performing a data analysis, you might want to save your dataset with others, which you can achieve using <code>pin(data, board = &quot;&lt;board-name&gt;&quot;)</code>.</p>
+<p>After performing a data analysis, you might want to share your dataset with others, which you can achieve using <code>pin(data, board = &quot;&lt;board-name&gt;&quot;)</code>.</p>
+<p>There are multiple boards available, one that can help you share pins with other R sessions and tools it the ‘local’ board, which stores pins in your local computer. In order to use a local board, you need to register it first:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1"><span class="kw">board_register_local</span>()</a></code></pre></div>
+<p>You can also name your boards using the ‘name’ parameter, when a name is not specified, the <code>pins</code> package will simply name your board with the kind of board you are using, ‘local’ in the previous example.</p>
 <p>The following example stores a simple data analysis over home prices as ‘home_price_analysis’ in the ‘local’ board.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1"><span class="kw">pin_get</span>(<span class="st">&quot;home_price_indexes&quot;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb12-2" title="2"><span class="st">  </span><span class="kw">read_csv</span>(<span class="dt">col_types =</span> <span class="kw">cols</span>()) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb12-3" title="3"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">group_by</span>(yr) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb12-4" title="4"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">count</span>() <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb12-5" title="5"><span class="st">  </span><span class="kw">pin</span>(<span class="st">&quot;home_price_analysis&quot;</span>, <span class="dt">board =</span> <span class="st">&quot;local&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="kw">pin_get</span>(<span class="st">&quot;home_price_indexes&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb13-2" title="2"><span class="st">  </span><span class="kw">read_csv</span>(<span class="dt">col_types =</span> <span class="kw">cols</span>()) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb13-3" title="3"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">group_by</span>(yr) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb13-4" title="4"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">count</span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb13-5" title="5"><span class="st">  </span><span class="kw">pin</span>(<span class="st">&quot;home_price_analysis&quot;</span>, <span class="dt">board =</span> <span class="st">&quot;local&quot;</span>)</a></code></pre></div>
 <pre><code>## # A tibble: 45 x 2
 ##       yr     n
 ##    &lt;dbl&gt; &lt;int&gt;
@@ -418,7 +421,8 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##  9  1983  1005
 ## 10  1984  1089
 ## # … with 35 more rows</code></pre>
-<p>To be fair, storing pins locally is not really sharing with others; instead, you would want to replace <code>local</code> with <code>github</code>, <code>rsconnect</code> or <code>kaggle</code>. However, we will first have to configure the appropriate boards, this will be presented in the <a href="boards-github.html">Understanding Boards</a> article. Before we get to that, the <a href="pins-rstudio.html">Using Pins with RStudio</a> article will present how to use the functionality presented here using RStudio’s user interface.</p>
+<p>The local board allows you to share pins with other R sessions or even other Python sessions, to share with other people or across different computers, you can consider using the <code>github</code>, <code>rsconnect</code> or <code>kaggle</code> boards; these boards will be introduced in the <a href="boards-github.html">Understanding Boards</a> article.</p>
+<p>Before we get to that, the <a href="pins-rstudio.html">Using Pins with RStudio</a> article presents a few enhancements available when using <code>pins</code> in RStudio.</p>
 </div>
 
 

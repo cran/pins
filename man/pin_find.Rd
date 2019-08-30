@@ -35,21 +35,24 @@ Once you find a pin, you can retrieve with \code{pin_get("pin-name")}.
 \examples{
 library(pins)
 
-# retrieve local pins
-pin_find(board = "local")
+# retrieve pins
+pin_find()
 
-# search local pins related to 'cars'
-pin_find("cars", board = "local")
+# search pins related to 'cars'
+pin_find("cars")
 
 # search pins related to 'seattle' in the 'packages' board
 pin_find("seattle", board = "packages")
 
-# retrieve 'hpiR/seattle_sales' pin
-pin_get("hpiR/seattle_sales")
-
 # search pins related to 'london' in the 'packages' board
 pin_find("london", board = "packages")
 
+\donttest{
+# retrieve 'hpiR/seattle_sales' pin
+pin_get("hpiR/seattle_sales")
+
 # retrieve 'bsamGP/London.Mortality' pin
 pin_get("bsamGP/London.Mortality")
+}
+
 }

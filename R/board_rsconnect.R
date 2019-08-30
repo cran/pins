@@ -36,17 +36,7 @@ board_initialize.rsconnect <- function(board, ...) {
   board
 }
 
-board_load.rsconnect <- function(board) {
-  board
-}
-
-board_persist.rsconnect <- function(board) {
-  board
-}
-
 board_pin_create.rsconnect <- function(board, path, name, metadata, ...) {
-  on.exit(board_connect(board$name))
-
   deps <- rsconnect_dependencies()
 
   temp_dir <- file.path(tempfile(), name)
@@ -268,5 +258,5 @@ board_pin_remove.rsconnect <- function(board, name) {
 }
 
 board_browse.rsconnect <- function(board) {
-  utils::browseURL(paste0("http://", board$server))
+  utils::browseURL(board$server)
 }

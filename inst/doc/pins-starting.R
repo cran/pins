@@ -39,6 +39,9 @@ pin_get("BSDA/Housing")
 #    read_csv(col_types = cols())
 
 ## ----eval=FALSE----------------------------------------------------------
+#  board_register_local()
+
+## ----eval=FALSE----------------------------------------------------------
 #  pin_get("home_price_indexes") %>%
 #    read_csv(col_types = cols()) %>%
 #    dplyr::group_by(yr) %>%
