@@ -22,7 +22,7 @@
 #    dev.off()
 #  
 #    metadata <- list(
-#      formula = deparse(formula(x))
+#      columns = list(formula = deparse(formula(x)))
 #    )
 #  
 #    board_pin_store(board, path, name, description, "linear_model", metadata, ...)
@@ -30,6 +30,10 @@
 #  
 #  pin_load.linear_model <- function(path, ...) {
 #    readRDS(file.path(path, "model.rds"))
+#  }
+#  
+#  pin_preview.linear_model <- function(x, ...) {
+#    x
 #  }
 
 ## ----eval=FALSE----------------------------------------------------------

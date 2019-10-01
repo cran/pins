@@ -34,6 +34,12 @@ board_initialize.github <- function(board, token = NULL, repo = NULL, path = "",
   board$path <- if (!is.null(path) && nchar(path) > 0) paste0(path, "/") else ""
   board$branch <- branch
 
+  # check repo exists
+  check_exists <- httr::GET(github_url(board, branch = NULL), github_headers(board))
+  if (httr::http_error(check_exists)) {
+    stop("The repo '", board$repo, "' does not exist or can't be accessed: ", httr::content(check_exists)$message)
+  }
+
   branches <- tryCatch(github_branches(board), error = function(e) e)
   if ("error" %in% class(branches) && grepl("^Git Repository is empty", branches$message)) {
     github_update_index(board, "", "initialize repo", operation = "initialize", branch = "master")
@@ -169,6 +175,7 @@ github_upload_content <- function(board, name, file, file_path, commit, sha, bra
   upload <- httr::content(response)
 
   if (httr::http_error(response)) {
+    pin_log("Failed to upload ", file, " response: ", upload)
     stop("Failed to upload ", file, " to ", board$repo, ": ", upload$message)
   }
 }
@@ -214,8 +221,8 @@ board_pin_create.github <- function(board, path, name, metadata, ...) {
 
   for (file in upload_files) {
     commit <- if (is.null(list(...)$commit)) paste("update", name) else list(...)$commit
-
-    sha <- Filter(function(e) identical(e$path, file.path(name, file)), dir_shas)[[1]]$sha
+    named_sha <- Filter(function(e) identical(e$path, file.path(name, file)), dir_shas)
+    sha <- if (length(named_sha) > 0) named_sha[[1]]$sha else NULL
 
     file_path <- file.path(bundle_path, file)
 
@@ -225,7 +232,7 @@ board_pin_create.github <- function(board, path, name, metadata, ...) {
       yaml::write_yaml(datatxt, file_path)
     }
 
-    if ((file.info(file_path)$size > 5 * 10^7 || release_storage) && !identical(file, "data.txt")) {
+    if ((file.info(file_path)$size > getOption("pins.github.release", 25) * 10^6 || release_storage) && !identical(file, "data.txt")) {
       if (is.null(release)) release <- github_create_release(board, name)
       download_url <- github_upload_release(board, release, name, file, file_path)
       release_map[[file]] <- download_url
@@ -247,7 +254,7 @@ board_pin_create.github <- function(board, path, name, metadata, ...) {
 board_pin_find.github <- function(board, text, ...) {
   branch <- if (is.null(list(...)$branch)) board$branch else list(...)$branch
 
-  result <- httr::GET(github_url(board, "/contents/", board$path, "/data.txt"),
+  result <- httr::GET(github_url(board, "/contents/", board$path, "/data.txt", branch = branch),
                       github_headers(board))
 
   if (!httr::http_error(result)) {
@@ -264,33 +271,8 @@ board_pin_find.github <- function(board, text, ...) {
       pin_results_from_rows()
   }
   else {
-
-    result <- httr::GET(github_url(board, branch = branch, "/contents/", board$path),
-                        github_headers(board))
-
-    if (httr::http_error(result)) {
-      result <- data.frame(
-        name = character(),
-        description = character(),
-        type = character(),
-        metadata = character(),
-        stringsAsFactors = FALSE
-      )
-    }
-    else {
-      folders <-  Filter(function(e) identical(e$type, "dir"), httr::content(result)) %>%
-        sapply(function(e) e$name)
-
-      result <- data.frame(
-        name = folders,
-        description = rep("", length(folders)),
-        type = rep("files", length(folders)),
-        metadata = rep("", length(folders)),
-        stringsAsFactors = FALSE
-      )
-
-      result
-    }
+    pin_log("Failed to find 'data.txt' file in repo '", board$repo, "', path '", board$path, "' and branch '", branch, "'.")
+    result <- pin_find_empty()
   }
 
   if (is.character(text)) {

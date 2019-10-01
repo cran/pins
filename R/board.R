@@ -1,6 +1,6 @@
 new_board <- function(board, name, cache, ...) {
 
-  if (is.null(cache)) stop("Please specify the 'cache' parameter, usually set to '~/.pins'.")
+  if (is.null(cache)) stop("Please specify the 'cache' parameter.")
 
   board <- structure(list(
       board = board,
@@ -55,7 +55,8 @@ board_disconnect <- function(name, ...) {
 #'
 #' @export
 board_list <- function() {
-  board_registry_list()
+  defaults <- c("local", "packages", board_default())
+  unique(c(board_registry_list(), defaults))
 }
 
 #' Get Board
@@ -68,8 +69,14 @@ board_list <- function() {
 board_get <- function(name) {
   if (is.null(name)) name <- board_default()
 
-  if (!name %in% board_list())
-    stop("Board '", name, "' not a board, available boards: ", paste(board_list(), collapse = ", "))
+  if (!name %in% board_registry_list()) {
+    # attempt to automatically register board
+    tryCatch(board_register(name, connect = !identical(name, "packages")), error = function(e) NULL)
+
+    if (!name %in% board_registry_list()) {
+      stop("Board '", name, "' not a board, available boards: ", paste(board_list(), collapse = ", "))
+    }
+  }
 
   board_registry_get(name)
 }
@@ -81,14 +88,14 @@ board_get <- function(name) {
 #'
 #' @param board The name of the board to register.
 #' @param name An optional name to identify this board, defaults to the board name.
-#' @param cache The local folder to use as a cache, defaults to \code{"~/.pins"}.
+#' @param cache The local folder to use as a cache, defaults to \code{board_cache_path()}.
 #' @param ... Additional parameters required to initialize a particular board.
 #'
 #' @details
 #'
 #' A board requires a local cache to avoid downloading files multiple times. It is
 #' recommended to not specify the \code{cache} parameter since it defaults to a well
-#' known \code{"~/.pins"} location. However, you are welcome to specify any other
+#' known \code{rappdirs}. However, you are welcome to specify any other
 #' location for this cache or even a temp folder with \code{tempfile()}. Notice that,
 #' when using a temp folder, pins will be cleared when your R session restarts. The
 #' cache parameter can be also set with the \code{pins.path} option.
@@ -108,7 +115,7 @@ board_get <- function(name) {
 #'   \code{\link{board_register_datatxt}}.
 #'
 #' @export
-board_register <- function(board, name = board, cache = "~/.pins", ...) {
+board_register <- function(board, name = board, cache = board_cache_path(), ...) {
   params <- list(...)
   board <- new_board(board, name, cache = cache, ...)
 
@@ -176,7 +183,7 @@ board_register_code <- function(board, name) {
 #'
 #' @export
 board_deregister <- function(name, ...) {
-  if (!name %in% board_list()) stop("Board '", name, "' is not registered.")
+  if (!name %in% board_registry_list()) stop("Board '", name, "' is not registered.")
 
   board <- board_get(name)
 
@@ -188,10 +195,15 @@ board_deregister <- function(name, ...) {
 
 #' Default Board
 #'
-#' Retrieves the default board, which defaults to \code{"temp"} but can also be
+#' Retrieves the default board, which defaults to \code{"local"} but can also be
 #' configured with the \code{pins.board} option.
 #'
 #' @examples
+#'
+#' library(pins)
+#'
+#' # create temp board
+#' board_register_local("temp", cache = tempfile())
 #'
 #' # configure default board
 #' options(pind.board = "temp")
@@ -201,5 +213,5 @@ board_deregister <- function(name, ...) {
 #'
 #' @export
 board_default <- function() {
-  getOption("pins.board", "temp")
+  getOption("pins.board", "local")
 }

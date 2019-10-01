@@ -16,12 +16,12 @@
 #  [Understand] -> [Communicate]
 #  [Communicate] --> [<dashed>Share]", "images/pins-starting-overview.png")
 
-## ------------------------------------------------------------------------
-library(pins)
-pin_find("home prices")
+## ----eval=FALSE----------------------------------------------------------
+#  library(pins)
+#  pin_find("boston housing")
 
-## ------------------------------------------------------------------------
-pin_get("BSDA/Housing")
+## ----eval=FALSE----------------------------------------------------------
+#  pin_get("BSDA/Housing")
 
 ## ----eval=FALSE----------------------------------------------------------
 #  pin("http://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_master.csv")
@@ -39,12 +39,12 @@ pin_get("BSDA/Housing")
 #    read_csv(col_types = cols())
 
 ## ----eval=FALSE----------------------------------------------------------
-#  board_register_local()
+#  board_list()
 
 ## ----eval=FALSE----------------------------------------------------------
 #  pin_get("home_price_indexes") %>%
 #    read_csv(col_types = cols()) %>%
 #    dplyr::group_by(yr) %>%
 #    dplyr::count() %>%
-#    pin("home_price_analysis", board = "local")
+#    pin("home_price_analysis")
 

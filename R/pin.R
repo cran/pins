@@ -51,6 +51,9 @@ pin_default_name <- function(x, board) {
 #' @examples
 #' library(pins)
 #'
+#' # define local board
+#' board_register_local(cache = tempfile())
+#'
 #' # cache the mtcars dataset
 #' pin(mtcars)
 #'
@@ -98,6 +101,9 @@ pin <- function(x, name = NULL, description = NULL, board = NULL, ...) {
 #' @examples
 #'
 #' library(pins)
+#'
+#' # define local board
+#' board_register_local(cache = tempfile())
 #'
 #' # cache the mtcars dataset
 #' pin(mtcars)
@@ -152,13 +158,28 @@ pin_get <- function(name, board = NULL, cache = TRUE, ...) {
 #' @examples
 #'
 #' library(pins)
+#'
+#' # define local board
+#' board_register_local(cache = tempfile())
+#'
+#' # create mtcars pin
 #' pin(mtcars)
 #'
 #' # remove mtcars pin
-#' pin_remove(mtcars, board = "temp")
+#' pin_remove(mtcars, board = "local")
 #' @export
 pin_remove <- function(name, board) {
   board_pin_remove(board_get(board), name)
+}
+
+pin_find_empty <- function() {
+  data.frame(
+    name = character(),
+    description = character(),
+    type = character(),
+    metadata = character(),
+    board = character(),
+    stringsAsFactors = FALSE)
 }
 
 #' Find Pin
@@ -215,12 +236,7 @@ pin_find <- function(text = NULL, board = NULL, ...) {
   metadata <- identical(list(...)$metadata, TRUE)
   text <- pin_content_name(text)
 
-  all_pins <- data.frame(
-    name = character(),
-    description = character(),
-    type = character(),
-    metadata = character(),
-    board = character())
+  all_pins <- pin_find_empty()
 
   for (board_name in board) {
     board_object <- board_get(board_name)
@@ -256,28 +272,15 @@ pin_find <- function(text = NULL, board = NULL, ...) {
   format_tibble(all_pins)
 }
 
-#' Preview Pin
-#'
-#' Previews a subset of the pin contents, useful to print or display
-#' a subset of the pin contents.
-#'
-#' @param x The pin to preview, retrieved with \code{pin_get()}.
-#' @param board The board where this pin will be retrieved from.
-#' @param ... Additional parameters.
-#'
+
+#' @rdname custom-pins
 #' @keywords internal
 #' @export
 pin_preview <- function(x, board = NULL, ...) {
   UseMethod("pin_preview")
 }
 
-#' Load Pin
-#'
-#' Load a pin from the given file path making use of the pin type.
-#'
-#' @param path The file to load as a pin.
-#' @param ... Additional parameters.
-#'
+#' @rdname custom-pins
 #' @keywords internal
 #' @export
 pin_load <- function(path, ...) {

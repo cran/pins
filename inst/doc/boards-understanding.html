@@ -311,10 +311,9 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <pre><code># A tibble: 2 x 1
    paths                                                
    &lt;chr&gt;                                                
- 1 /Users/username/pins/local/data.txt     
- 2 /Users/username/pins/local/mtcars            </code></pre>
-<p>As you can see, each pin is stored inside a <code>pins/</code> folder and a list of resources is tracked on a <code>data.txt</code> file. The function <code>pin()</code> and <code>pin_get()</code> store and retrieve data from this well-known location, while <code>pin_find()</code> makes use of the index file to search for resources and track other properties like cache expiration information.</p>
-<p>Since this ‘local’ board is the default, you can also explicitly store or retrieve datasets from this board:</p>
+ 1 /Users/username/Library/Caches/pins/local/data.txt   
+ 2 /Users/username/Library/Caches/pins/local/mtcars          </code></pre>
+<p>As you can see, each pin is stored inside the <code>rappdirs::user_cache_dir()</code> folder and a list of resources is tracked on a <code>data.txt</code> file. The function <code>pin()</code> and <code>pin_get()</code> store and retrieve data from this well-known location, while <code>pin_find()</code> makes use of the index file to search for resources and track other properties like cache expiration information. We can make explicit use of the default “local” board as follows:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">pin</span>(mtcars, <span class="dt">name =</span> <span class="st">&quot;mtcars&quot;</span>, <span class="dt">board =</span> <span class="st">&quot;local&quot;</span>)</a>
 <a class="sourceLine" id="cb3-2" title="2"><span class="kw">pin_get</span>(<span class="st">&quot;mtcars&quot;</span>, <span class="dt">board =</span> <span class="st">&quot;local&quot;</span>)</a></code></pre></div>
 <p>A local board is quite useful for all the reasons mentioned in the <a href="pins-rstudio.html">Getting Started</a> article; however, to take full advantage of pins, you can also consider storing pins in shared locations that others can access, for instance:</p>
