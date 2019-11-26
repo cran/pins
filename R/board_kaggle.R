@@ -52,7 +52,7 @@ kaggle_upload_resource <- function(path, board) {
   token <- parsed$token
 
   results <- httr::PUT(upload_url, body = httr::upload_file(normalizePath(path)), config = kaggle_auth(board),
-                       http_utils_progress("up"))
+                       http_utils_progress("up", size = file.info(normalizePath(path))$size))
 
   if (httr::http_error(results)) stop("Upload failed with status ", httr::status_code(results))
 
@@ -188,7 +188,7 @@ board_pin_search_kaggle <- function(board, text = NULL) {
   httr::content(results)
 }
 
-board_pin_find.kaggle <- function(board, text, ...) {
+board_pin_find.kaggle <- function(board, text, extended = FALSE, ...) {
   if (!kaggle_authenticated(board)) return(board_empty_results())
 
   if (is.null(text)) text <- ""
@@ -202,9 +202,9 @@ board_pin_find.kaggle <- function(board, text, ...) {
 
   results <- c(results, board_pin_search_kaggle(board, text))
 
-  results <- jsonlite::fromJSON(jsonlite::toJSON(results))
+  results <- pin_entries_to_dataframe(results)
 
-  if (identical(list(...)$extended, TRUE)) {
+  if (identical(extended, TRUE)) {
     results$name <- results$ref
     results$description <- results$title
     results$ref <- NULL
@@ -224,22 +224,23 @@ board_pin_find.kaggle <- function(board, text, ...) {
     unique()
 }
 
-board_pin_get.kaggle <- function(board, name) {
+board_pin_get.kaggle <- function(board, name, extract = NULL, ...) {
   if (!grepl("/", name)) name <- paste(kaggle_auth_info(board)$username, name, sep = "/")
 
   url <- paste0("https://www.kaggle.com/api/v1/datasets/download/", name)
-  temp_zip <- tempfile(fileext = ".zip")
 
-  extended <- pin_find(name, board = board$name, extended = TRUE)
-  extended <- extended[grepl(name, extended$name),]
+  extended <- pin_find(name = name, board = board$name, extended = TRUE)
 
   etag <- if (is.null(extended$lastUpdated)) "" else as.character(extended$lastUpdated)
+  content_length <- if (is.null(extended$totalBytes)) 0 else as.integer(extended$totalBytes)
 
   local_path <- pin_download(url,
                              name,
                              component = board$name,
                              config = kaggle_auth(board),
-                             custom_etag = etag)
+                             custom_etag = etag,
+                             extract = !identical(extract, FALSE),
+                             content_length = content_length)
 
   local_path
 }

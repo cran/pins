@@ -1,11 +1,15 @@
-pin_download <- function(path, name, component, ...) {
-  must_download <- identical(list(...)$download, TRUE)
-  headers <- list(...)$headers
-  config <- list(...)$config
-  custom_etag <- list(...)$custom_etag
-  remove_query <- identical(list(...)$remove_query, TRUE)
-  can_fail <- identical(list(...)$can_fail, TRUE)
-
+pin_download <- function(path,
+                         name,
+                         component,
+                         extract = FALSE,
+                         custom_etag = "",
+                         remove_query = FALSE,
+                         config = NULL,
+                         headers = NULL,
+                         can_fail = FALSE,
+                         must_download = FALSE,
+                         content_length = 0,
+                         ...) {
   local_path <- pin_storage_path(component, name)
 
   # use a temp path to rollback if something fails
@@ -45,7 +49,7 @@ pin_download <- function(path, name, component, ...) {
   cache$url <- path
 
   error <- NULL
-  is_zip <- FALSE
+  extract_type <- NULL
 
   pin_log("Checking 'change_age' header (time, change age, max age): ", as.numeric(Sys.time()), ", ", cache$change_age, ", ", cache$max_age)
 
@@ -53,7 +57,7 @@ pin_download <- function(path, name, component, ...) {
   if (as.numeric(Sys.time()) >= cache$change_age + cache$max_age || must_download) {
 
     skip_download <- FALSE
-    if (!is.null(custom_etag)) {
+    if (is.character(custom_etag) && nchar(custom_etag) > 0) {
       pin_log("Using custom 'etag' (old, new): ", old_cache$etag, ", ", custom_etag)
       cache$etag <- custom_etag
     }
@@ -64,6 +68,8 @@ pin_download <- function(path, name, component, ...) {
         cache$max_age <- pin_file_cache_max_age(head_result$headers$`cache-control`)
 
         cache$change_age <- as.numeric(Sys.time())
+
+        content_length <- head_result$headers$`content-length`
 
         pin_log("Checking 'etag' (old, new): ", old_cache$etag, ", ", cache$etag)
       }
@@ -78,15 +84,18 @@ pin_download <- function(path, name, component, ...) {
         pin_log("Downloading ", path, " to ", destination_path)
 
         write_spec <- httr::write_disk(destination_path, overwrite = TRUE)
-        result <- catch_error(httr::GET(path, write_spec, headers, config, http_utils_progress()))
-        is_zip <- identical(result$headers$`content-type`, "application/zip")
-        if (!is_zip && identical(result$headers$`content-type`, "application/octet-stream")) {
-          is_zip <- file.size(destination_path) > 4 &&
-            identical(readBin(destination_path, raw(), 4), as.raw(c(0x50, 0x4b, 0x03, 0x04)))
+        result <- catch_error(httr::GET(path, write_spec, headers, config, http_utils_progress(size = content_length)))
+        extract_type <- gsub("application/(x-)?", "", result$headers$`content-type`)
+        if (!is.null(result$headers$`content-type`) && result$headers$`content-type` %in% c("application/octet-stream", "application/zip")) {
+          if (file.size(destination_path) > 4 &&
+              identical(readBin(destination_path, raw(), 4), as.raw(c(0x50, 0x4b, 0x03, 0x04))))
+            extract_type <- "zip"
         }
 
         if (httr::http_error(result)) {
           error <- paste0(httr::http_status(result)$message, ". Failed to download remote file: ", path)
+          pin_log(as.character(httr::content(result)))
+
           report_error(error)
         }
     }
@@ -99,21 +108,30 @@ pin_download <- function(path, name, component, ...) {
   new_cache <- old_pin$cache
   new_cache[[cache_index]] <- cache
 
-  if (is_zip) {
-    zip <- dir(temp_path, full.names = TRUE)
-    pin_log("Extracting zip file '", zip, "'")
-    zip::unzip(zip, exdir = temp_path)
-    unlink(zip)
+  # allow to override extraction method, useful in pin() from URLs.
+  if (is.character(extract)) {
+    extract_type <- extract
+    extract <- TRUE
+  }
+
+  if (!is.null(extract_type) && identical(extract, TRUE)) {
+    pin_extract(
+      structure(dir(temp_path, full.names = TRUE), class = extract_type),
+      temp_path
+    )
   }
 
   for (file in dir(temp_path, full.names = TRUE)) {
     file.copy(file, local_path, overwrite = TRUE, recursive = TRUE)
   }
 
+  # use relative paths to match remote service downloads and allow moving pins foldeer, potentially
+  relative_path <- gsub(pin_storage_path(component, ""), "", local_path, fixed = TRUE)
+
   pin_registry_update(
     name = name,
     params = list(
-      path = if (is.null(old_pin$path)) local_path else old_pin$path,
+      path = if (is.null(old_pin$path)) relative_path else old_pin$path,
       cache = new_cache),
     component = component)
 

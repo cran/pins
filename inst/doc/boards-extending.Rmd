@@ -24,7 +24,7 @@ nomnoml::nomnoml("
 [Pin]->[Remove]
 [Remove]->[Board]", "images/boards-extending-overview.png")
 ```
-![](images/boards-extending-overview.png){width=50%}
+![](images/boards-extending-overview.jpg){width=50%}
 
 The most important S3 methods that your board needs to support are `board_pin_create()`, `board_pin_get()`, `board_pin_find()` and `board_pin_remove()` which define how to create, get, find and remove a pin.
 

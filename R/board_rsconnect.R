@@ -38,6 +38,8 @@ board_initialize.rsconnect <- function(board, ...) {
     board <- rsconnect_token_initialize(board)
   }
 
+  board$pins_supported <- tryCatch(rsconnect_pins_supported(board), error = function(e) FALSE)
+
   board
 }
 
@@ -130,7 +132,8 @@ board_pin_create.rsconnect <- function(board, path, name, metadata, ...) {
 
     upload <- rsconnect_api_post(board,
                                  paste0("/__api__/v1/experimental/content/", guid, "/upload"),
-                                 httr::upload_file(normalizePath(bundle)),
+                                 httr::upload_file(normalizePath(bundle),
+                                                   http_utils_progress("up", size = file.info(normalizePath(bundle))$size)),
                                  http_utils_progress("up"))
 
     if (!is.null(upload$error)) {
@@ -152,24 +155,32 @@ board_pin_create.rsconnect <- function(board, path, name, metadata, ...) {
   }
 }
 
-board_pin_find.rsconnect <- function(board, text = NULL, all_content = FALSE, name = NULL, ...) {
+board_pin_find.rsconnect <- function(board,
+                                     text = NULL,
+                                     name = NULL,
+                                     all_content = FALSE,
+                                     extended = FALSE,
+                                     ...) {
   if (is.null(text)) text <- ""
+  if (!is.null(name)) text <- pin_content_name(name)
 
-  if (nchar(text) == 0 && is.null(name)) {
-    # it can be quite slow to list all content in RStudio Connect so we scope to the user content
-    account_id <- rsconnect_api_get(board, "/__api__/users/current/")$id
-    filter <- paste0("filter=account_id:", account_id, "&accountId:", account_id)
-  }
-  else {
-    filter <- paste0("search=", text)
-  }
+  filter <- paste0("search=", text)
+  content_filter <- ""
 
-  entries <- rsconnect_api_get(board, paste0("/__api__/applications/?", utils::URLencode(filter)))$applications
+  if (identical(board$pins_supported, TRUE)) content_filter <- "filter=content_type:pin&"
+
+  entries <- rsconnect_api_get(board, paste0("/__api__/applications/?", content_filter, utils::URLencode(filter)))$applications
   if (!all_content) entries <- Filter(function(e) e$content_category == "pin", entries)
 
   entries <- lapply(entries, function(e) { e$name <- paste(e$owner_username, e$name, sep = "/") ; e })
 
-  if (!is.null(name)) entries <- Filter(function(e) grepl(name, e$name), entries)
+  if (!is.null(name)) {
+    name_pattern <- if (grepl("/", name)) paste0("^", name, "$") else paste0(".*/", name, "$")
+    entries <- Filter(function(e) grepl(name_pattern, e$name), entries)
+  }
+
+  if (identical(extended, TRUE))
+    return(pin_entries_to_dataframe(entries))
 
   results <- pin_results_from_rows(entries)
 
@@ -182,12 +193,16 @@ board_pin_find.rsconnect <- function(board, text = NULL, all_content = FALSE, na
   null_or_value <- function(e, value) if (is.null(e)) value else e
   results$name <- as.character(results$name)
   results$type <- unname(sapply(results$description, function(e) null_or_value(board_metadata_from_text(e)$type, "files")))
-  results$metadata <- sapply(results$description, function(e) as.character(jsonlite::toJSON(board_metadata_from_text(e), auto_unbox = TRUE)))
+
+  if (!identical(extended, TRUE)) {
+    results$metadata <- sapply(results$description, function(e) as.character(jsonlite::toJSON(board_metadata_from_text(e), auto_unbox = TRUE)))
+  }
+
   results$description <- board_metadata_remove(results$description)
 
   if (length(entries) == 1) {
     # enhance with pin information
-    remote_path <- rsconnect_remote_path_from_url(entries[[1]]$url)
+    remote_path <- rsconnect_remote_path_from_url(board, entries[[1]]$url)
     etag <- as.character(entries[[1]]$last_deployed_time)
 
     local_path <- rsconnect_api_download(board, entries[[1]]$name, file.path(remote_path, "data.txt"), etag = etag)
@@ -203,15 +218,12 @@ board_pin_find.rsconnect <- function(board, text = NULL, all_content = FALSE, na
 }
 
 rsconnect_get_by_name <- function(board, name) {
-  name_pattern <- if (grepl("/", name)) paste0("^", name, "$") else paste0(".*/", name, "$")
   only_name <- pin_content_name(name)
 
-  details <- board_pin_find(board, name = name_pattern)
+  details <- board_pin_find(board, text = only_name, name = name)
   details <- pin_results_extract_column(details, "content_category")
   details <- pin_results_extract_column(details, "url")
   details <- pin_results_extract_column(details, "guid")
-
-  details <- details[grepl(name_pattern, details$name),]
 
   if (nrow(details) > 1) {
     details <- details[details$owner_username == board$account,]
@@ -232,12 +244,12 @@ rsconnect_wait_by_name <- function(board, name) {
   }
 }
 
-rsconnect_remote_path_from_url <- function(url) {
-  url <- gsub("/$", "", url)
-  gsub("//", "/", file.path("/content", gsub("(^.*/|^)content/", "", url)))
+rsconnect_remote_path_from_url <- function(board, url) {
+  url <- gsub(paste0("^.*", board$server), "", url)
+  gsub("/$", "", url)
 }
 
-board_pin_get.rsconnect <- function(board, name) {
+board_pin_get.rsconnect <- function(board, name, ...) {
   url <- name
 
   if (identical(board$output_files, TRUE)) {
@@ -249,15 +261,16 @@ board_pin_get.rsconnect <- function(board, name) {
     details <- rsconnect_get_by_name(board, name)
     if (nrow(details) == 0) stop("The pin '", name, "' is not available in the '", board$name, "' board.")
     url <- details$url
+    name <- details$name
     etag <- jsonlite::fromJSON(details$metadata)$last_deployed_time
   }
 
-  remote_path <- rsconnect_remote_path_from_url(url)
+  remote_path <- rsconnect_remote_path_from_url(board, url)
 
   local_path <- rsconnect_api_download(board, name, file.path(remote_path, "data.txt"), etag = etag)
-  manifest <- pin_manifest_get(local_path)
+  manifest_paths <- pin_manifest_download(local_path)
 
-  for (file in manifest$path) {
+  for (file in manifest_paths) {
     rsconnect_api_download(board, name, file.path(remote_path, file), etag = etag)
   }
 

@@ -1,5 +1,5 @@
 board_initialize.local <- function(board, cache, ...) {
-  if (!dir.exists(board$cache)) dir.create(board$cache)
+  if (!dir.exists(board$cache)) dir.create(board$cache, recursive = TRUE)
 
   board
 }
@@ -47,7 +47,7 @@ board_pin_find.local <- function(board, text, ...) {
   results
 }
 
-board_pin_get.local <- function(board, name) {
+board_pin_get.local <- function(board, name, ...) {
   entry <- pin_registry_retrieve(name, board$name)
   entry$path
 }

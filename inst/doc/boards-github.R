@@ -24,3 +24,9 @@ library(pins)
 ## ----eval=FALSE----------------------------------------------------------
 #  pin_find("motor", board = "github")
 
+## ----eval=FALSE----------------------------------------------------------
+#  pin_find("data", board = "github", extended = TRUE)
+
+## ----eval=FALSE----------------------------------------------------------
+#  pin_info("mtcars", board = "github")
+

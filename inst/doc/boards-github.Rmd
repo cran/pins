@@ -36,7 +36,7 @@ board_register("github", repo = "owner/repo")
 
 Alternatively, you can create a GitHub token at [github.com/settings/tokens/new](https://github.com/settings/tokens/new) with the required permissions to access your repo. For public repos, you only need the `public_repo` scope:
 
-![](images/boards-github-token.png){width=480px}
+![](images/boards-github-token.jpg){width=480px}
 
 Once the token is created, you can register your GitHub board through:
 
@@ -57,7 +57,7 @@ pin(mtcars, description = "The motor trend cars data set", board = "github")
 
 Notice then the structure in the GitHub repo. Similar to the folder structure in the local board, a folder is created for each pin and a `data.txt` index added to the repo.
 
-![](images/boards-github-repo.png){width=480px}
+![](images/boards-github-repo.jpg){width=480px}
 
 You can also retrieve pins back from this repo using the now familiar `pin_get()` function,
 
@@ -95,13 +95,52 @@ pin_find("motor", board = "github")
 1 mtcars The motor trend cars data set table github
 ```
 
+GitHub boards contain extended fields that go beyond the fields `pins` requires, to retrieve all the additional fields use `extended = TRUE`:
+
+```{r eval=FALSE}
+pin_find("data", board = "github", extended = TRUE)
+```
+```
+# A tibble: 2 x 7
+  name   description                   type  path    rows  cols board 
+  <chr>  <chr>                         <chr> <chr>  <int> <int> <chr> 
+1 iris   The iris data set             table iris     150     5 github
+2 mtcars The motor trend cars data set table mtcars    32    11 github
+```
+
+Or `pin_info()` to retrieve all the information associated with a particular pin,
+
+```{r eval=FALSE}
+pin_info("mtcars", board = "github")
+```
+```
+# Source: github<mtcars> [table]
+# Description: The motor trend cars data set
+# Extended:
+#   - path: data.csv, data.rds
+#   - rows: 32
+#   - cols: 11
+#   - columns: 
+#     - mpg: numeric
+#     - cyl: numeric
+#     - disp: numeric
+#     - hp: numeric
+#     - drat: numeric
+#     - wt: numeric
+#     - qsec: numeric
+#     - vs: numeric
+#     - am: numeric
+#     - gear: numeric
+#     - carb: numeric
+```
+
 Notice that the given 'motor' search keyword is searched in the name and description fields for the pins available in this repo.
 
 ## Sharing
 
 When working in teams, you might want to share your pins with others. For GitHub boards, this is accomplished by adding collaborators through the GitHub website. 
 
-![](images/boards-github-sharing.png){width=480px}
+![](images/boards-github-sharing.jpg){width=480px}
 
 Once your collaborators gain access to the repo, they can follow the same steps to register the same GitHub board to allow them to upload and download pins with ease.
 
@@ -111,6 +150,6 @@ A GitHub repo only supports files under 25MB in size (100MB in theory but there 
 
 Therefore, to support large files, `pins` makes use of GitHub release files. When you upload a file over , `pins` will create a new GitHub release file for that particular pin. Everything else works as expected, you can still retrieve the large resource with `pin_get()` and find it with `pin_find()`. The only noticeable change is new releases being created in your repo:
 
-![](images/boards-github-release.png){width=480px}
+![](images/boards-github-release.jpg){width=480px}
 
 You can configure the 25MB check to use release files with the `pins.github.release` option.

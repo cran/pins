@@ -17,3 +17,9 @@ library(pins)
 ## ----eval=FALSE----------------------------------------------------------
 #  pin_find("motor", board = "kaggle")
 
+## ----eval=FALSE----------------------------------------------------------
+#  pin_find("motor", board = "kaggle", extended = TRUE)
+
+## ----eval=FALSE----------------------------------------------------------
+#  pin_info("electric-motor-temperature", board = "kaggle")
+

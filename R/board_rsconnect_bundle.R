@@ -1,7 +1,9 @@
 rsconnect_bundle_template_html <- function(temp_dir, template, value) {
   html_file <- file.path(temp_dir, "index.html")
   html_index <- readLines(html_file)
-  html_index <- gsub(paste0("\\{\\{", template, "\\}\\}"), value, html_index)
+
+  value <- gsub("\\n", "\\\\n", value, fixed = TRUE)
+  html_index <- gsub(paste0("{{", template, "}}"), value, html_index, fixed = TRUE)
   writeLines(html_index, html_file)
 }
 
@@ -67,6 +69,14 @@ rsconnect_bundle_create.data.frame <- function(x, temp_dir, name, board, account
   rsconnect_bundle_template_common(temp_dir, "", name, board, account_name)
 
   "data.rds"
+}
+
+rsconnect_bundle_create.AsIs <- function(x, temp_dir, name, board, account_name) {
+  rsconnect_bundle_create.default(x = x,
+                                  temp_dir = temp_dir,
+                                  name = name,
+                                  board = board,
+                                  account_name = account_name)
 }
 
 rsconnect_bundle_create.default <- function(x, temp_dir, name, board, account_name) {

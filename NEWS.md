@@ -1,3 +1,91 @@
+# pins 0.3.0
+
+- Support for Azure board.
+
+- Support for Google Cloud board.
+
+- Support for S3 board.
+
+## Pins
+
+- `pin()` extracts URLs that end in `.gz` and `zip`, which can be
+  disabled with `pin("<url>", extract = FALSE)`.
+
+- `pin()` no longer prints the pin, you can revert this behavior with
+  `options(pins.invisible = FALSE)` (#122).
+
+- Show upload progress for files larger than 10mb.
+
+- Avoid changing `data.table` when using `pin()` and `get_pin()`.
+
+- Support for `pin_info()` to describe a pin and `extended = TRUE` in
+  `pin_find()` to show all extended information about each pin.
+
+- Support for `extract` parameter in `pin_get()`, `pin()`, and
+  `pin_reactive()` to override default file extraction behavior.
+  
+- Support to extract gzip files when the `R.utils` package is installed.
+
+- Show download progress for files larger than 10mb.
+
+- Support for `I()` to force a pin to be created without additional
+  overhead of exporting CSV and other enhancements (#73).
+
+- Support creating automatic `name` when using `pin()` and
+  multiple URL.
+
+## Boards
+
+- Avoid "cannot create dir" warning in systems with an
+  empty cache folder.
+  
+## RStudio
+
+- Website boards now support the browse menu item in the connection.
+
+- Fix data frames previewing character columns with special
+  characters.
+
+- Fix connection code when a board is registered automatically.
+
+## RStudio Connect
+
+- Fix issue where `pin_find()` would not show all available
+  pins.
+
+- Fix issue where RStudio Connections pane would not show
+  all pins.
+
+- Store all downloaded content under user subfolder insited 
+  rsconnect cache.
+
+- Removed `pin_find()` workaround for beta rsconnect server where
+  searching was causing timeout.
+
+- Fix for RStudio Connect servers where `/content/` is not 
+  used in content URLs.
+
+- Fix issue expanding pins columns in RStudio for pins with
+  similar names in RStudio Connect boards.
+
+- Fix issue removing pins with similar names in RStudio
+  Connect boards.
+
+## Python
+
+- Support for Python 3.
+
+## Websites
+
+- The `name` parameter in `board_register_datatxt()` is now optional.
+
+- Fix in `pin_find()` to properly search desecription files.
+
+## GitHub
+
+- Various fixes for GitHub boards using the `path` parameter
+  when registering the board (#121).
+
 # pins 0.2.0
 
 ## RStudio Connect

@@ -63,7 +63,7 @@ github_update_index <- function(board, path, commit, operation, name = NULL, met
     sha <- httr::content(response)$sha
     content <- httr::content(response)
 
-    # API reeturns contents when size < 1mb
+    # API returns contents when size < 1mb
     if (!is.null(content$content)) {
       index <- board_manifest_load(rawToChar(base64enc::base64decode(content$content)))
     }
@@ -149,7 +149,8 @@ github_upload_release <- function(board, release, name, file, file_path) {
   response <- httr::POST(
     asset_url,
     query = list(name = file),
-    body = httr::upload_file(normalizePath(file_path)),
+    body = httr::upload_file(normalizePath(file_path),
+                             http_utils_progress("up", size = file.info(normalizePath(file_path))$size)),
     github_headers(board),
     http_utils_progress("up"))
 
@@ -221,7 +222,7 @@ board_pin_create.github <- function(board, path, name, metadata, ...) {
 
   for (file in upload_files) {
     commit <- if (is.null(list(...)$commit)) paste("update", name) else list(...)$commit
-    named_sha <- Filter(function(e) identical(e$path, file.path(name, file)), dir_shas)
+    named_sha <- Filter(function(e) identical(e$path, paste0(board$path, file.path(name, file))), dir_shas)
     sha <- if (length(named_sha) > 0) named_sha[[1]]$sha else NULL
 
     file_path <- file.path(bundle_path, file)
@@ -254,7 +255,7 @@ board_pin_create.github <- function(board, path, name, metadata, ...) {
 board_pin_find.github <- function(board, text, ...) {
   branch <- if (is.null(list(...)$branch)) board$branch else list(...)$branch
 
-  result <- httr::GET(github_url(board, "/contents/", board$path, "/data.txt", branch = branch),
+  result <- httr::GET(github_url(board, "/contents/", board$path, "data.txt", branch = branch),
                       github_headers(board))
 
   if (!httr::http_error(result)) {
@@ -353,7 +354,7 @@ github_branches_create <- function(board, new_branch, base_branch) {
 github_content_url <- function(board, branch = board$branch, ...) {
   args <- list(...)
 
-  url <- paste0("https://api.github.com/repos/", board$repo, "/contents/", paste0(args, collapse = ""))
+  url <- paste0("https://api.github.com/repos/", board$repo, "/contents/", paste0(board$path, paste0(args, collapse = "")))
   if (!is.null(branch))
     url <- paste0(url, "?ref=", branch)
 
@@ -380,16 +381,16 @@ github_download_files <- function(index, temp_path, board) {
   }
 }
 
-board_pin_get.github <- function(board, name, ...) {
+board_pin_get.github <- function(board, name, extract = NULL, ...) {
   branch <- if (is.null(list(...)$branch)) board$branch else list(...)$branch
 
   base_url <- github_raw_url(board, branch = branch, board$path, name, "/data.txt")
   local_path <- pin_download(base_url, name, board$name, headers = github_headers(board))
 
   if (file.exists(file.path(local_path, "data.txt"))) {
-    index <- pin_manifest_get(local_path)
+    index_path <- pin_manifest_download(local_path)
 
-    for (file in index$path) {
+    for (file in index_path) {
       file_url <- file
       headers <- github_headers(board)
 
@@ -400,7 +401,7 @@ board_pin_get.github <- function(board, name, ...) {
       else {
         file_url <- github_raw_url(board, branch = branch, board$path, name, "/", file)
       }
-      pin_download(file_url, name, board$name, headers = headers)
+      pin_download(file_url, name, board$name, headers = headers, extract = identical(extract, TRUE))
     }
 
     local_path

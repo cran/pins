@@ -14,9 +14,9 @@
 #'
 #' @export
 #' @rdname custom-pins
-board_pin_store <- function(board, path, name, description, type, metadata, ...) {
+board_pin_store <- function(board, path, name, description, type, metadata, extract = TRUE, ...) {
   board <- board_get(board)
-  if (is.null(name)) name <- gsub("[^a-zA-Z0-9]+", "_", tools::file_path_sans_ext(basename(path)))
+  if (is.null(name)) name <- gsub("[^a-zA-Z0-9]+", "_", tools::file_path_sans_ext(basename(path)))[[1]]
 
   if (identical(list(...)$cache, FALSE)) pin_reset_cache(board$name, name)
 
@@ -28,7 +28,7 @@ board_pin_store <- function(board, path, name, description, type, metadata, ...)
 
   for (single_path in path) {
     if (grepl("^http", single_path)) {
-      single_path <- pin_download(single_path, name, board_default(), ...)
+      single_path <- pin_download(single_path, name, board_default(), extract = extract, ...)
     }
 
     if (dir.exists(single_path)) {
@@ -46,5 +46,10 @@ board_pin_store <- function(board, path, name, description, type, metadata, ...)
 
   board_pin_create(board, store_path, name = name, metadata = metadata, ...)
 
-  pin_get(name, board$name, ...)
+  pin_get(name, board$name, ...) %>%
+    invisible_maybe()
+}
+
+invisible_maybe <- function(e) {
+  if (getOption("pins.invisible", TRUE)) invisible(e) else I(e)
 }

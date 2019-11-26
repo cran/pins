@@ -57,7 +57,7 @@ pin_default_name <- function(x, board) {
 #' # cache the mtcars dataset
 #' pin(mtcars)
 #'
-#' # cache computation oveer mtcars
+#' # cache computation over mtcars
 #' mtcars[mtcars$mpg > 30,] %>%
 #'   pin(name = "mtefficient")
 #'
@@ -89,6 +89,8 @@ pin <- function(x, name = NULL, description = NULL, board = NULL, ...) {
 #' @param name The name of the pin.
 #' @param board The board where this pin will be retrieved from.
 #' @param cache Should the pin cache be used? Defaults to \code{TRUE}.
+#' @param extract Should compressed files be extracted? Each board defines the
+#'   deefault behavior.
 #' @param ... Additional parameters.
 #'
 #' @details
@@ -114,7 +116,7 @@ pin <- function(x, name = NULL, description = NULL, board = NULL, ...) {
 #' # retrieve mtcars pin from packages board
 #' pin_get("easyalluvial/mtcars2", board = "packages")
 #' @export
-pin_get <- function(name, board = NULL, cache = TRUE, ...) {
+pin_get <- function(name, board = NULL, cache = TRUE, extract = NULL, ...) {
   if (is.null(board)) {
     board_pin_get_or_null <- function(...) tryCatch(board_pin_get(...), error = function(e) NULL)
 
@@ -123,7 +125,7 @@ pin_get <- function(name, board = NULL, cache = TRUE, ...) {
     if (is.null(result) && is.null(board)) {
       for (board_name in board_list()) {
         if (!cache) pin_reset_cache(board_name, name)
-        result <- board_pin_get_or_null(board_get(board_name), name)
+        result <- board_pin_get_or_null(board_get(board_name), name, extract = extract)
         if (!is.null(result)) break
       }
     }
@@ -131,15 +133,13 @@ pin_get <- function(name, board = NULL, cache = TRUE, ...) {
   }
   else {
     if (!cache) pin_reset_cache(board, name)
-    result <- board_pin_get(board_get(board), name, ...)
+    result <- board_pin_get(board_get(board), name, extract = extract, ...)
   }
 
   manifest <- pin_manifest_get(result)
   if (is.null(manifest$type)) manifest$type <- "files"
 
-  result <- pin_load(structure(result, class = manifest$type))
-
-  format_tibble(result)
+  pin_load(structure(result, class = manifest$type))
 }
 
 #' Remove Pin
@@ -188,6 +188,8 @@ pin_find_empty <- function() {
 #'
 #' @param text The text to find in the pin description or name.
 #' @param board The board name used to find the pin.
+#' @param name The exact name of the pin to match when searching.
+#' @param extended Should additional board-specific colulmns be shown?
 #' @param ... Additional parameters.
 #'
 #' @details
@@ -231,10 +233,15 @@ pin_find_empty <- function() {
 #' }
 #'
 #' @export
-pin_find <- function(text = NULL, board = NULL, ...) {
+pin_find <- function(text = NULL,
+                     board = NULL,
+                     name = NULL,
+                     extended = FALSE,
+                     ...) {
   if (is.null(board) || nchar(board) == 0) board <- board_list()
   metadata <- identical(list(...)$metadata, TRUE)
   text <- pin_content_name(text)
+  if (is.null(text) && !is.null(name)) text <- name
 
   all_pins <- pin_find_empty()
 
@@ -242,15 +249,28 @@ pin_find <- function(text = NULL, board = NULL, ...) {
     board_object <- board_get(board_name)
 
     board_pins <- tryCatch(
-      board_pin_find(board = board_object, text, ...),
+      board_pin_find(board = board_object, text, name = name, extended = extended, ...),
       error = function(e) {
         warning("Error searching '", board_name, "' board: ", e$message)
         board_empty_results()
       })
 
-    board_pins$board <- rep(board_name, nrow(board_pins))
+    if (identical(extended, TRUE)) {
+      ext_df <- tryCatch(
+        paste("[", paste(board_pins$metadata, collapse = ","), "]") %>% jsonlite::fromJSON(),
+        error = function(e) NULL)
 
-    all_pins <- rbind(all_pins, board_pins)
+      if (is.data.frame(ext_df) && nrow(board_pins) == nrow(ext_df)) {
+        ext_df <- ext_df[, !names(ext_df) %in% colnames(board_pins)]
+        board_pins <- cbind(board_pins, ext_df)
+      }
+    }
+
+    if (nrow(board_pins) > 0) {
+      board_pins$board <- rep(board_name, nrow(board_pins))
+
+      all_pins <- pin_results_merge(all_pins, board_pins, identical(extended, TRUE))
+    }
   }
 
   if (!is.null(text)) {
@@ -263,9 +283,8 @@ pin_find <- function(text = NULL, board = NULL, ...) {
     all_pins <- all_pins[, names(all_pins) != "metadata"]
   }
 
-  if (!is.null(list(...)$name)) {
-    name <- list(...)$name
-    all_pins <- all_pins[all_pins$name == name,]
+  if (!is.null(name)) {
+    all_pins <- all_pins[grepl(paste0("(.*/)?", name, "$"), all_pins$name),]
     if (nrow(all_pins) > 0) all_pins <- all_pins[1,]
   }
 
@@ -285,4 +304,131 @@ pin_preview <- function(x, board = NULL, ...) {
 #' @export
 pin_load <- function(path, ...) {
   UseMethod("pin_load")
+}
+
+pin_files <- function(name, board = NULL, absolute = TRUE, ...) {
+  entry <- pin_find(name = name, board = board, metadata = TRUE)
+
+  if (nrow(entry) != 1) stop("Pin '", name, "' not found.")
+  metadata <- jsonlite::fromJSON(as.list(entry)$metadata)
+
+  dir(file.path(board_local_storage(board), metadata$path), recursive = TRUE, full.names = absolute)
+}
+
+#' Pin Info
+#'
+#' Retrieve information for a given pin.
+#'
+#' @param name The exact name of the pin to match when searching.
+#' @param board The board name used to find the pin.
+#' @param extended Should additional board-specific colulmns be shown?
+#' @param ... Additional parameters.
+#'
+#' @examples
+#' library(pins)
+#'
+#' # define local board
+#' board_register_local(cache = tempfile())
+#'
+#' # cache the mtcars dataset
+#' pin(mtcars)
+#'
+#' # print pin information
+#' pin_info("mtcars")
+#'
+#' @export
+pin_info <- function(name, board = NULL, extended = TRUE, ...) {
+  entry <- pin_find(name = name, board = board, metadata = TRUE)
+
+  if (nrow(entry) == 0) stop("Pin '", name, "' was not found.")
+  if (nrow(entry) > 1) stop("Pin '", name, "' was found in multiple boards: ", paste(entry$board, llapse = ","),  ".")
+
+  board <- entry$board
+
+  metadata <- list()
+  if (!is.null(entry$metadata) && nchar(entry$metadata) > 0) {
+    metadata <- jsonlite::fromJSON(entry$metadata)
+  }
+
+  entry <- as.list(entry)
+  entry_ext <- list()
+
+  if (extended) {
+    entry_df <- pin_find(name = name, board = board, extended = TRUE)
+    if (nrow(entry_df) == 1) {
+      entry_ext <- as.list(entry_df)
+    }
+
+    entry_ext <- Filter(function(e) !is.list(e) || length(e) != 1 || !is.list(e[[1]]) || length(e[[1]]) > 0, entry_df)
+  }
+
+  for (name in names(metadata)) {
+    if (nrow(entry_ext) == length(metadata[[name]])) {
+      entry_ext[[name]] <- metadata[[name]]
+    }
+  }
+  entry$metadata <- NULL
+
+  for (name in names(entry)) {
+    entry_ext[[name]] <- entry[[name]]
+  }
+
+  structure(entry_ext, class = "pin_info")
+}
+
+print_pin_info <- function(name, e, ident) {
+  # avoid empty lavels that are nested
+  if (is.list(e) && is.null(names(e)) && length(e) == 1) e <- e[[1]]
+
+  # one-row data frames are better displayed as lists
+  if (is.data.frame(e) && nrow(e) == 1) e <- as.list(e)
+
+  if (!is.list(e) && is.vector(e)) {
+    cat(crayon::silver(paste0("#", ident, "- ", name, ": ", paste(e, collapse = ", "), "\n")))
+  }
+  else if (is.data.frame(e)) {
+    cat(crayon::silver(paste0("#", ident, "- ", name, ": ")))
+    if (length(colnames(e)) > 0) cat(crayon::silver(paste0("(", colnames(e)[[1]], ") ")))
+    cat(crayon::silver(paste(e[,1], collapse = ", ")))
+    if (length(colnames(e)) > 1) cat(crayon::silver("..."))
+    cat(crayon::silver("\n"))
+  }
+  else if (is.list(e)) {
+    cat(crayon::silver(paste0("#", ident, "- ", name, ": \n")))
+    for (i in names(e)) {
+      print_pin_info(i, e[[i]], paste0(ident, "  "))
+    }
+  }
+  else {
+    cat(crayon::silver(paste0("#", ident, "- ", name, ": ", class(e)[[1]], "\n")))
+  }
+}
+
+#' @keywords internal
+#' @export
+print.pin_info <- function(x, ...) {
+  info <- x
+
+  cat(crayon::silver(paste0("# Source: ", info$board, "<", info$name, "> [", info$type, "]\n")))
+  if (nchar(info$description) > 0) cat(crayon::silver(paste0("# Description: ", info$description, "\n")))
+
+  info$board <- info$name <- info$type <- info$description <- NULL
+
+  is_first <- TRUE
+  for (name in names(info)) {
+    e <- info[[name]]
+    if (identical(is.na(e), FALSE) && identical(is.null(e), FALSE) && !(is.character(e) && nchar(e) == 0)) {
+      if (is_first) cat(crayon::silver(paste0("# Properties:", "\n")))
+      is_first <- FALSE
+
+      print_pin_info(name, e, "   ")
+    }
+  }
+}
+
+#' @rdname custom-pins
+#' @keywords internal
+#' @export
+pin_fetch <- function(path, ...) {
+  UseMethod("pin_fetch")
 }

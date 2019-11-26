@@ -29,7 +29,7 @@ nomnoml::nomnoml("
 [Understand] -> [Communicate]
 [Communicate] --> [<dashed>Share]", "images/pins-starting-overview.png")
 ```
-![](images/pins-starting-overview.png){width=100%}
+![](images/pins-starting-overview.jpg){width=100%}
 
 The `pins` package refers to arbitrary resources as pins, and refers to the action of caching a resource as pinning. A pin is something useful to have but not terrible to lose -- you should always have reproducible code to regenerate a pin.
 

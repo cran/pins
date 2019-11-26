@@ -25,6 +25,12 @@ library(pins)
 #  pin_find("mt", board = "rsconnect")
 
 ## ----eval=FALSE----------------------------------------------------------
+#  pin_find(board = "rsconnect", extended = TRUE)
+
+## ----eval=FALSE----------------------------------------------------------
+#  pin_info("mtcars", board = "rsconnect")
+
+## ----eval=FALSE----------------------------------------------------------
 #  board_register_rsconnect(key = "the-rstudio-connect-api-key",
 #                           server = "https://rstudio-connect-server")
 
