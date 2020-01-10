@@ -11,18 +11,20 @@ rsconnect_pins_supported <- function(board) {
 board_initialize.rsconnect <- function(board, ...) {
   args <- list(...)
 
-  envvar_key <- Sys.getenv("RSCONNECT_API")
+  envvar_key <- Sys.getenv("CONNECT_API_KEY", Sys.getenv("RSCONNECT_API"))
   if (is.null(args$key) && nchar(envvar_key) > 0) {
     args$key <- envvar_key
   }
 
-  envvar_server <- Sys.getenv("RSCONNECT_SERVER")
+  envvar_server <- Sys.getenv("CONNECT_SERVER", Sys.getenv("RSCONNECT_SERVER"))
   if (is.null(args$server) && nchar(envvar_server) > 0) {
     args$server <- envvar_server
   }
 
-  board$server <- args$server
-  board$server_name <- if (!is.null(args$server)) gsub("https?://|:[0-9]+/?|/.*", "", args$server) else NULL
+  if (!is.null(args$server)) {
+    board$server <-  gsub("/$", "", args$server)
+    board$server_name <- gsub("https?://|:[0-9]+/?|/.*", "", args$server)
+  }
   board$account <- args$account
   board$output_files <- args$output_files
 
@@ -64,7 +66,20 @@ board_pin_create.rsconnect <- function(board, path, name, metadata, ...) {
   }
 
   file.copy(dir(path, full.names = TRUE), temp_dir)
-  data_files <- rsconnect_bundle_create(x, temp_dir, name, board, account_name)
+  data_files <- tryCatch({
+    rsconnect_bundle_create(x, temp_dir, name, board, account_name)
+  }, error = function(e) {
+    NULL
+  })
+
+  # handle unexepcted failures gracefully
+  if (is.null(data_files)) {
+    warning("Falied to create preview files for pin.")
+    unlink(temp_dir, recursive = TRUE)
+    dir.create(temp_dir, recursive = TRUE)
+    file.copy(dir(path, full.names = TRUE), temp_dir)
+    data_files <- rsconnect_bundle_create.default(x, temp_dir, name, board, account_name)
+  }
 
   rsconnect_is_authenticated <- function(board) {
     !is.null(board$key) || !is.null(board$account)
@@ -103,6 +118,10 @@ board_pin_create.rsconnect <- function(board, path, name, metadata, ...) {
                                       name = name,
                                       description = board_metadata_to_text(metadata, metadata$description)
                                     ))
+
+      if (!is.null(content$error)) {
+        stop("Failed to create pin: ", content$error)
+      }
     }
 
     files <- lapply(dir(temp_dir, recursive = TRUE, full.names = TRUE), function(path) {
@@ -132,11 +151,13 @@ board_pin_create.rsconnect <- function(board, path, name, metadata, ...) {
 
     upload <- rsconnect_api_post(board,
                                  paste0("/__api__/v1/experimental/content/", guid, "/upload"),
-                                 httr::upload_file(normalizePath(bundle),
-                                                   http_utils_progress("up", size = file.info(normalizePath(bundle))$size)),
-                                 http_utils_progress("up"))
+                                 httr::upload_file(normalizePath(bundle)),
+                                 progress = http_utils_progress("up", size = file.info(normalizePath(bundle))$size))
 
     if (!is.null(upload$error)) {
+      # before we fail, clean up rsconnect content
+      rsconnect_api_delete(board, paste0("/__api__/v1/experimental/content/", guid))
+
       stop("Failed to upload pin: ", upload$error)
     }
 

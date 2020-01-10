@@ -166,7 +166,7 @@ pin_get <- function(name, board = NULL, cache = TRUE, extract = NULL, ...) {
 #' pin(mtcars)
 #'
 #' # remove mtcars pin
-#' pin_remove(mtcars, board = "local")
+#' pin_remove("mtcars", board = "local")
 #' @export
 pin_remove <- function(name, board) {
   board_pin_remove(board_get(board), name)
@@ -306,13 +306,13 @@ pin_load <- function(path, ...) {
   UseMethod("pin_load")
 }
 
-pin_files <- function(name, board = NULL, absolute = TRUE, ...) {
+pin_files <- function(name, board = NULL, ...) {
   entry <- pin_find(name = name, board = board, metadata = TRUE)
 
   if (nrow(entry) != 1) stop("Pin '", name, "' not found.")
   metadata <- jsonlite::fromJSON(as.list(entry)$metadata)
 
-  dir(file.path(board_local_storage(board), metadata$path), recursive = TRUE, full.names = absolute)
+  metadata$path
 }
 
 #' Pin Info
@@ -383,24 +383,35 @@ print_pin_info <- function(name, e, ident) {
   # one-row data frames are better displayed as lists
   if (is.data.frame(e) && nrow(e) == 1) e <- as.list(e)
 
+  name_prefix <- if (!is.null(name) && nchar(name) > 0) paste0(name, ": ") else ""
+
   if (!is.list(e) && is.vector(e)) {
-    cat(crayon::silver(paste0("#", ident, "- ", name, ": ", paste(e, collapse = ", "), "\n")))
+    # Long strings (like paths) print better on their own line
+    if (length(e) > 1 && is.character(e) && max(nchar(e)) > 20) {
+      cat(crayon::silver(paste0("#", ident, "- ", name_prefix, "\n")))
+      for (i in e) {
+        print_pin_info("", i, paste0(ident, "  "))
+      }
+    }
+    else {
+      cat(crayon::silver(paste0("#", ident, "- ", name_prefix, paste(e, collapse = ", "), "\n")))
+    }
   }
   else if (is.data.frame(e)) {
-    cat(crayon::silver(paste0("#", ident, "- ", name, ": ")))
+    cat(crayon::silver(paste0("#", ident, "- ", name_prefix)))
     if (length(colnames(e)) > 0) cat(crayon::silver(paste0("(", colnames(e)[[1]], ") ")))
     cat(crayon::silver(paste(e[,1], collapse = ", ")))
     if (length(colnames(e)) > 1) cat(crayon::silver("..."))
     cat(crayon::silver("\n"))
   }
   else if (is.list(e)) {
-    cat(crayon::silver(paste0("#", ident, "- ", name, ": \n")))
+    cat(crayon::silver(paste0("#", ident, "- ", name_prefix, "\n")))
     for (i in names(e)) {
       print_pin_info(i, e[[i]], paste0(ident, "  "))
     }
   }
   else {
-    cat(crayon::silver(paste0("#", ident, "- ", name, ": ", class(e)[[1]], "\n")))
+    cat(crayon::silver(paste0("#", ident, "- ", name_prefix, class(e)[[1]], "\n")))
   }
 }
 

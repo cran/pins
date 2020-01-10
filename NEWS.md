@@ -1,3 +1,36 @@
+# pins 0.3.1
+
+## Pins
+
+- `pin_info()` prints long character strings in their own line.
+
+- Fixed issue in `pin_remove()` for S3, Azure, GCloud, Google and website boards (#138).
+
+- Fixed issue when pinning complex data frames with nested lists (#142).
+
+## Azure
+
+- Added missing `key` parameter in `board_register_azure()`.
+
+## RStudio
+
+- Fixed connection suggested code when caused by `pin_find()` (#137).
+
+- Fixed connection launcher for Azure connections.
+
+## RStudio Connect
+
+- Fix issue uploading large pins causing `is.character(type) is not TRUE`
+  error.
+
+- Fix issue affecting boards registered with trailing slash (#151).
+
+- Improve error messages when a pin fails to be created (#149).
+
+- Added support for `CONNECT_API_KEY` and `CONNECT_SERVER` in place of
+  `RSCONNECT_API` and `RSCONNECT_SERVER`, which they are still supported
+  for backwards-compatibility.
+
 # pins 0.3.0
 
 - Support for Azure board.
@@ -40,6 +73,8 @@
   empty cache folder.
   
 ## RStudio
+
+- Gracefully handle errors when a pin's preview can't be created.
 
 - Website boards now support the browse menu item in the connection.
 
