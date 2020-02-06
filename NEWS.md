@@ -1,3 +1,13 @@
+# pins 0.3.2
+
+## Pins
+
+- `pin_info()` adds support for `metadata` parameter to avoid retrieving pin contents.
+
+## GitHub
+
+- Fix regression uploading large datasets as release files.
+
 # pins 0.3.1
 
 ## Pins
