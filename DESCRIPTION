@@ -1,7 +1,7 @@
 Package: pins
 Type: Package
 Title: Pin, Discover and Share Resources
-Version: 0.3.2
+Version: 0.4.0
 Authors@R: c(
     person("Javier", "Luraschi", email = "javier@rstudio.com", role = c("aut", "cre")),
     person(family = "RStudio", role = c("cph"))
@@ -16,15 +16,16 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
 Depends: R (>= 3.2.0)
-Imports: base64enc, crayon, httr, jsonlite, magrittr, mime, openssl,
-        rappdirs, withr, yaml, zip
-Suggests: knitr, rmarkdown, R6, testthat
+Imports: backports, base64enc, crayon, digest, filelock, httr,
+        jsonlite, magrittr, mime, openssl, rappdirs, withr, yaml, zip
+Suggests: callr, covr, data.table, knitr, rmarkdown, R6, tibble,
+        testthat, xml2
 VignetteBuilder: knitr
 URL: https://github.com/rstudio/pins
 BugReports: https://github.com/rstudio/pins/issues
 NeedsCompilation: no
-Packaged: 2020-02-05 21:01:50 UTC; javierluraschi
+Packaged: 2020-04-07 18:20:46 UTC; javierluraschi
 Author: Javier Luraschi [aut, cre],
   RStudio [cph]
 Repository: CRAN
-Date/Publication: 2020-02-06 19:10:02 UTC
+Date/Publication: 2020-04-07 18:50:02 UTC

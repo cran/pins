@@ -341,11 +341,13 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
  9          4.4         2.9          1.4         0.2 setosa 
 10          4.9         3.1          1.5         0.1 setosa 
 # … with 140 more rows</code></pre>
+<p>Notice you can also retrieve an arbitrary file using the path to the file or its URL as well:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">pin_get</span>(<span class="st">&quot;iris/data.csv&quot;</span>, <span class="dt">board =</span> <span class="st">&quot;s3&quot;</span>)</a></code></pre></div>
 </div>
 <div id="discovering" class="section level2">
 <h2>Discovering</h2>
 <p>You can then search pins in your S3 board using <code>pin_find()</code>, which by default search all boards but you can also explicitly request to use this particular board:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">pin_find</span>(<span class="st">&quot;data&quot;</span>, <span class="dt">board =</span> <span class="st">&quot;s3&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">pin_find</span>(<span class="st">&quot;data&quot;</span>, <span class="dt">board =</span> <span class="st">&quot;s3&quot;</span>)</a></code></pre></div>
 <pre><code># A tibble: 2 x 4
   name   description                   type  board
   &lt;chr&gt;  &lt;chr&gt;                         &lt;chr&gt; &lt;chr&gt;

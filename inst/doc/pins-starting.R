@@ -24,15 +24,15 @@
 #  pin_get("BSDA/Housing")
 
 ## ----eval=FALSE----------------------------------------------------------
-#  pin("http://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_master.csv")
+#  pin("http://www.fhfa.gov/datatools/downloads/documents/hpi/hpi_master.csv")
 
 ## ----eval=FALSE----------------------------------------------------------
 #  library(readr)
-#  pin("http://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_master.csv") %>%
+#  pin("http://www.fhfa.gov/datatools/downloads/documents/hpi/hpi_master.csv") %>%
 #    read_csv(col_types = cols())
 
 ## ----eval=FALSE----------------------------------------------------------
-#  pin("http://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_master.csv",
+#  pin("http://www.fhfa.gov/datatools/downloads/documents/hpi/hpi_master.csv",
 #      name = "home_price_indexes")
 #  
 #  pin_get("home_price_indexes") %>%

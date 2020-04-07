@@ -18,6 +18,12 @@ library(pins)
 ## ----eval=FALSE----------------------------------------------------------
 #  pin_get("iris", board = "s3")
 
+## ----eval=FALSE, echo=FALSE----------------------------------------------
+#  pin_get("https://pinsbucket.region.amazonaws.com/iris/data.csv", board = "s3")
+
+## ----eval=FALSE----------------------------------------------------------
+#  pin_get("iris/data.csv", board = "s3")
+
 ## ----eval=FALSE----------------------------------------------------------
 #  pin_find("data", board = "s3")
 

@@ -18,6 +18,12 @@ library(pins)
 ## ----eval=FALSE----------------------------------------------------------
 #  pin_get("iris", board = "azure")
 
+## ----eval=FALSE, echo=FALSE----------------------------------------------
+#  pin_get("https://pinsstorage.blob.core.windows.net/pinscontainer/iris/data.csv", board = "azure")
+
+## ----eval=FALSE----------------------------------------------------------
+#  pin_get("iris/data.csv", board = "azure")
+
 ## ----eval=FALSE----------------------------------------------------------
 #  pin_find("data", board = "azure")
 

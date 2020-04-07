@@ -23,7 +23,7 @@ board_initialize.rsconnect <- function(board, ...) {
 
   if (!is.null(args$server)) {
     board$server <-  gsub("/$", "", args$server)
-    board$server_name <- gsub("https?://|:[0-9]+/?|/.*", "", args$server)
+    board$server_name <- gsub("https?://|(:[0-9]+)?/.*", "", args$server)
   }
   board$account <- args$account
   board$output_files <- args$output_files
@@ -45,7 +45,15 @@ board_initialize.rsconnect <- function(board, ...) {
   board
 }
 
-board_pin_create.rsconnect <- function(board, path, name, metadata, ...) {
+board_pin_create.rsconnect <- function(board, path, name, metadata, code = NULL,
+                                      ...) {
+  dots <- list(...)
+  access_type <- if (!is.null(access_type <- dots[["access_type"]])) {
+    match.arg(access_type, c("acl", "logged_in", "all"))
+  } else {
+    NULL
+  }
+
   deps <- rsconnect_dependencies()
 
   temp_dir <- file.path(tempfile(), name)
@@ -67,7 +75,7 @@ board_pin_create.rsconnect <- function(board, path, name, metadata, ...) {
 
   file.copy(dir(path, full.names = TRUE), temp_dir)
   data_files <- tryCatch({
-    rsconnect_bundle_create(x, temp_dir, name, board, account_name)
+    rsconnect_bundle_create(x, temp_dir, name, board, account_name, retrieve_command = code)
   }, error = function(e) {
     NULL
   })
@@ -102,6 +110,7 @@ board_pin_create.rsconnect <- function(board, path, name, metadata, ...) {
                                     description = board_metadata_to_text(metadata, metadata$description)
                                   ))
       if (!is.null(content$error)) {
+        pin_log("Failed to create pin with name '", name, "'.")
         stop("Failed to create pin: ", content$error)
       }
 
@@ -116,10 +125,12 @@ board_pin_create.rsconnect <- function(board, path, name, metadata, ...) {
                                       app_mode = "static",
                                       content_category = "pin",
                                       name = name,
-                                      description = board_metadata_to_text(metadata, metadata$description)
+                                      description = board_metadata_to_text(metadata, metadata$description),
+                                      access_type = access_type
                                     ))
 
       if (!is.null(content$error)) {
+        pin_log("Failed to update pin with GUID '", guid, "' and name '", name, "'.")
         stop("Failed to create pin: ", content$error)
       }
     }
@@ -254,11 +265,15 @@ rsconnect_get_by_name <- function(board, name) {
   details <- pin_results_extract_column(details, "guid")
 
   if (nrow(details) > 1) {
-    details <- details[details$owner_username == board$account,]
+    owner_details <- details[details$owner_username == board$account,]
+    if (nrow(owner_details) == 1) {
+      details <- owner_details
+    }
   }
 
   if (nrow(details) > 1) {
-    stop("Multiple pins named '", name, "' in board '", board$name, "'")
+    stop("Multiple pins named '", name, "' in board '", board$name,
+         "', choose from: ", paste0("'", paste0(details$name, collapse = "', '"), "'."))
   }
 
   details
@@ -277,7 +292,7 @@ rsconnect_remote_path_from_url <- function(board, url) {
   gsub("/$", "", url)
 }
 
-board_pin_get.rsconnect <- function(board, name, ...) {
+board_pin_get.rsconnect <- function(board, name, version = NULL, ...) {
   url <- name
 
   if (identical(board$output_files, TRUE)) {
@@ -294,12 +309,18 @@ board_pin_get.rsconnect <- function(board, name, ...) {
   }
 
   remote_path <- rsconnect_remote_path_from_url(board, url)
+  download_name <- name
 
-  local_path <- rsconnect_api_download(board, name, file.path(remote_path, "data.txt"), etag = etag)
+  if (!is.null(version)) {
+    remote_path <- paste0(remote_path, "/_rev", version)
+    download_name <- file.path(name, pin_versions_path_name(), version)
+  }
+
+  local_path <- rsconnect_api_download(board, download_name, file.path(remote_path, "data.txt"), etag = etag)
   manifest_paths <- pin_manifest_download(local_path)
 
   for (file in manifest_paths) {
-    rsconnect_api_download(board, name, file.path(remote_path, file), etag = etag)
+    rsconnect_api_download(board, download_name, file.path(remote_path, file), etag = etag)
   }
 
   unlink(dir(local_path, "index\\.html$|pagedtable-1\\.1$", full.names = TRUE))
@@ -317,3 +338,20 @@ board_pin_remove.rsconnect <- function(board, name) {
 board_browse.rsconnect <- function(board) {
   utils::browseURL(board$server)
 }
+
+board_pin_versions.rsconnect <- function(board, name) {
+  details <- rsconnect_get_by_name(board, name)
+  if (nrow(details) == 0) stop("The pin '", name, "' is not available in the '", board$name, "' board.")
+
+  details$guid
+
+  bundles <- rsconnect_api_get(board, paste0("/__api__/v1/experimental/content/", details$guid, "/bundles/"))
+
+  data.frame(
+    version = sapply(bundles$results, function(e) e$id),
+    created = sapply(bundles$results, function(e) e$created_time),
+    size = sapply(bundles$results, function(e) e$size),
+    stringsAsFactors = FALSE) %>%
+    format_tibble()
+}
+

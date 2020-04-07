@@ -14,6 +14,12 @@ library(pins)
 ## ----eval=FALSE----------------------------------------------------------
 #  pin_get("iris", board = "gcloud")
 
+## ----eval=FALSE, echo=FALSE----------------------------------------------
+#  pin_get("https://storage.googleapis.com/pinscontainer/iris/data.csv", board = "gcloud")
+
+## ----eval=FALSE----------------------------------------------------------
+#  pin_get("iris/data.csv", board = "gcloud")
+
 ## ----eval=FALSE----------------------------------------------------------
 #  pin_find("data", board = "gcloud")
 

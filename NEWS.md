@@ -1,8 +1,70 @@
+# pins 0.4.0
+
+- Support for versioning in all boards.
+
+- Support for DigitalOcean board.
+
+## Pin
+
+- Finding pins with `pin_find()` sort results by default (#201).
+
+- Avoid `incomplete final line found` warning error wheen reading manifests.
+
+- Support for using `pin()` across multiple concurrent processes (#182).
+
+- Support in `pin_get()` to download arbitrary files from cloud boards
+  like Azure, DigitalOcean, GitHub, Google Cloud, RStudio Connect, and S3.
+
+- Fix issue where http HEAD requests could tgimeout and prevent pin from
+  downloading in very slow connections.
+
+## RStudio
+
+- Support `access_type` parameter for RStudio Connect.
+
+- `pin()` now refreshes the connections pane.
+
+- `pin_remove()` now refreshes the connections pane.
+
+## RStudio Connect
+
+- Support for `code` parameter in `pin()` to customize R code used in
+  the UI to retrieve the pin (#77).
+
+- Improve error message for `pin_get()` with duplicate names (#171).
+
+- Fix board register error when using URL with ports (#195).
+
+- Enable retrieving public pins without authentication (#83).
+
+## GitHub
+
+- Support for `versions = FALSE` in `board_register()` to also delete
+  release files when pin is removed (#91).
+
+- Support for `versions = FALSE` in `board_register()` to avoid creating
+  versioned GitHub releases (#197).
+
+- Support for committing all github files with a single commit (#197). 
+
+- Support for custom GitHub hosts including GitHub Enterprise using the
+  `host` parameter in `board_register_github()` (#163).
+
+## Websites
+
+- Using `pin()` now searches for `data.txt` files in URLs when the URL
+  contains no file extension, behavior can be turnned off with
+  the `pins.search.datatxt` option.
+
 # pins 0.3.2
 
 ## Pins
 
 - `pin_info()` adds support for `metadata` parameter to avoid retrieving pin contents.
+
+## S3
+
+- Added support for `host` parameter to configure "s3.amazonaws.com" to custom locations.
 
 ## GitHub
 

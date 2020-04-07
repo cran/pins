@@ -328,20 +328,17 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>As a quick example, let’s search for resources that may contain ‘boston housing’:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">library</span>(pins)</a>
 <a class="sourceLine" id="cb2-2" title="2"><span class="kw">pin_find</span>(<span class="st">&quot;boston housing&quot;</span>)</a></code></pre></div>
-<pre><code># A tibble: 18,695 x 4
-   name                         description                                     type  board   
-   &lt;chr&gt;                        &lt;chr&gt;                                           &lt;chr&gt; &lt;chr&gt;   
- 1 A3/housing                   Boston Housing Prices from A3 package.          table packages
- 2 A3/multifunctionality        Boston Housing Prices from A3 package.          table packages
- 3 abc.data/musigma2            Boston Housing Prices from abc.data package.    table packages
- 4 abc.data/ppc                 Boston Housing Prices from abc.data package.    table packages
- 5 ABC.RAP/annotation_file      Boston Housing Prices from ABC.RAP package.     table packages
- 6 ABC.RAP/nonspecific_probes   Boston Housing Prices from ABC.RAP package.     table packages
- 7 ABC.RAP/test_data            Boston Housing Prices from ABC.RAP package.     table packages
- 8 ABCanalysis/SwissInhabitants Boston Housing Prices from ABCanalysis package. table packages
- 9 ABCp2/fungus                 Boston Housing Prices from ABCp2 package.       table packages
-10 ABCp2/newt                   Boston Housing Prices from ABCp2 package.       table packages
-# … with 18,685 more rows</code></pre>
+<pre><code># A tibble: 8 x 4
+  name                  description                                            type  board  
+  &lt;chr&gt;                 &lt;chr&gt;                                                  &lt;chr&gt; &lt;chr&gt;  
+1 A3/housing            Boston Housing Prices from A3 package.                 table packag…
+2 BiDAG/Boston          Boston housing data from BiDAG package.                table packag…
+3 GSE/boston            Boston Housing Data from GSE package.                  table packag…
+4 KernelKnn/Boston      Boston Housing Data (Regression) from KernelKnn packa… table packag…
+5 mlbench/BostonHousing Boston Housing Data from mlbench package.              table packag…
+6 pdp/boston            Boston Housing Data from pdp package.                  table packag…
+7 spData/boston         Corrected Boston Housing Data from spData package.     table packag…
+8 spikeslab/housingI    Boston Housing Interaction Data from spikeslab packag… table packag…</code></pre>
 <p>We’ve found out that the <code>BSDA</code> package contains a <code>Housing</code> dataset, you can then retrieve this dataset using <code>pin_get()</code> as follows:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">pin_get</span>(<span class="st">&quot;BSDA/Housing&quot;</span>)</a></code></pre></div>
 <pre><code># A tibble: 74 x 3
@@ -363,11 +360,11 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div id="caching" class="section level2">
 <h2>Caching</h2>
 <p>Let’s suppose that the ‘home prices’ dataset is not exactly what we are looking for, we can try to search online for ‘home prices’ and find out that <a href="https://catalog.data.gov/">catalog.data.gov</a> contains a more suitable <a href="https://catalog.data.gov/dataset/fhfa-house-price-indexes-hpis">FHFA House Price Indexes</a> dataset. Instead of giving users explicit instructions to download the CSV file, we can instead use <code>pin()</code> to cache this dataset locally:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">pin</span>(<span class="st">&quot;http://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_master.csv&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">pin</span>(<span class="st">&quot;http://www.fhfa.gov/datatools/downloads/documents/hpi/hpi_master.csv&quot;</span>)</a></code></pre></div>
 <pre><code>[1] &quot;/Users/username/Library/Caches/pins/local/HPI_master/HPI_master.csv&quot;</code></pre>
 <p>Notice that the pin returns a path to a local CSV file, which you are free to load with your favorite package.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1"><span class="kw">library</span>(readr)</a>
-<a class="sourceLine" id="cb8-2" title="2"><span class="kw">pin</span>(<span class="st">&quot;http://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_master.csv&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb8-2" title="2"><span class="kw">pin</span>(<span class="st">&quot;http://www.fhfa.gov/datatools/downloads/documents/hpi/hpi_master.csv&quot;</span>) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb8-3" title="3"><span class="st">  </span><span class="kw">read_csv</span>(<span class="dt">col_types =</span> <span class="kw">cols</span>())</a></code></pre></div>
 <pre><code># A tibble: 108,826 x 10
    hpi_type hpi_flavor frequency level place_name place_id    yr period index_nsa
@@ -385,7 +382,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 # … with 108,816 more rows, and 1 more variable: index_sa &lt;dbl&gt;</code></pre>
 <p>The <code>pins</code> package tries to be smart about downloading files only when the file has changed, you can skip the details on how this works but you should know you can set <code>download = TRUE</code> to force <code>pins</code> to download the file again even if we think it has not changed. The specific mechanisms <code>pins</code> uses are based on HTTP headers like <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control">cache-control</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag">ETag</a> to avoid downloading files when they have not changed or when the cache has not expired.</p>
 <p>Notice that <code>pin()</code> assigned a name automatically, <code>HPI_master</code> for the previous example; however, you can choose your own name and be explicit about retrieving a pin with <code>pin_get()</code>:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1"><span class="kw">pin</span>(<span class="st">&quot;http://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_master.csv&quot;</span>,</a>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1"><span class="kw">pin</span>(<span class="st">&quot;http://www.fhfa.gov/datatools/downloads/documents/hpi/hpi_master.csv&quot;</span>,</a>
 <a class="sourceLine" id="cb10-2" title="2">    <span class="dt">name =</span> <span class="st">&quot;home_price_indexes&quot;</span>)</a>
 <a class="sourceLine" id="cb10-3" title="3"></a>
 <a class="sourceLine" id="cb10-4" title="4"><span class="kw">pin_get</span>(<span class="st">&quot;home_price_indexes&quot;</span>) <span class="op">%&gt;%</span></a>

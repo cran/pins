@@ -17,6 +17,7 @@
 board_pin_store <- function(board, path, name, description, type, metadata, extract = TRUE, ...) {
   board <- board_get(board)
   if (is.null(name)) name <- gsub("[^a-zA-Z0-9]+", "_", tools::file_path_sans_ext(basename(path)))[[1]]
+  pin_log("Storing ", name, " into board ", board$name, " with type ", type)
 
   if (identical(list(...)$cache, FALSE)) pin_reset_cache(board$name, name)
 
@@ -26,9 +27,24 @@ board_pin_store <- function(board, path, name, description, type, metadata, extr
   dir.create(store_path)
   on.exit(unlink(store_path, recursive = TRUE))
 
+  if (length(path) == 1 && grepl("^http", path) && !grepl("\\.[a-z]{2,4}$", path) && getOption("pins.search.datatxt", TRUE)) {
+    # attempt to download data.txt to enable public access to boards like rsconnect
+    datatxt_path <- file.path(path, "data.txt")
+    local_path <- pin_download(datatxt_path, name, board_default(), can_fail = TRUE)
+    if (!is.null(local_path)) {
+      manifest <- pin_manifest_get(local_path)
+      path <- paste(path, manifest$path, sep = "/")
+      extract <- FALSE
+    }
+  }
+
   for (single_path in path) {
     if (grepl("^http", single_path)) {
-      single_path <- pin_download(single_path, name, board_default(), extract = extract, ...)
+      single_path <- pin_download(single_path,
+                                  name,
+                                  board_default(),
+                                  extract = extract,
+                                  ...)
     }
 
     if (dir.exists(single_path)) {
@@ -39,12 +55,16 @@ board_pin_store <- function(board, path, name, description, type, metadata, extr
     }
   }
 
-  metadata$description <- description
-  metadata$type <- type
+  if (!pin_manifest_exists(store_path)) {
+    metadata$description <- description
+    metadata$type <- type
 
-  pin_manifest_create(store_path, metadata, dir(store_path, recursive = TRUE))
+    pin_manifest_create(store_path, metadata, dir(store_path, recursive = TRUE))
+  }
 
   board_pin_create(board, store_path, name = name, metadata = metadata, ...)
+
+  ui_viewer_updated(board)
 
   pin_get(name, board$name, ...) %>%
     invisible_maybe()

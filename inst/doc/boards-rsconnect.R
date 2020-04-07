@@ -31,6 +31,13 @@ library(pins)
 #  pin_info("mtcars", board = "rsconnect")
 
 ## ----eval=FALSE----------------------------------------------------------
+#  pin("https://rstudio-connect-server/content/1234", name = "my-rsc-content")
+
+## ----eval=FALSE----------------------------------------------------------
+#  # create a publicly visible pin
+#  pin("https://rstudio-connect-server/content/1234", name = "my-rsc-content", access_type = "all")
+
+## ----eval=FALSE----------------------------------------------------------
 #  board_register_rsconnect(key = "the-rstudio-connect-api-key",
 #                           server = "https://rstudio-connect-server")
 
