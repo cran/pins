@@ -1,7 +1,7 @@
 Package: pins
 Type: Package
 Title: Pin, Discover and Share Resources
-Version: 0.4.0
+Version: 0.4.1
 Authors@R: c(
     person("Javier", "Luraschi", email = "javier@rstudio.com", role = c("aut", "cre")),
     person(family = "RStudio", role = c("cph"))
@@ -24,8 +24,8 @@ VignetteBuilder: knitr
 URL: https://github.com/rstudio/pins
 BugReports: https://github.com/rstudio/pins/issues
 NeedsCompilation: no
-Packaged: 2020-04-07 18:20:46 UTC; javierluraschi
+Packaged: 2020-05-28 17:07:44 UTC; javierluraschi
 Author: Javier Luraschi [aut, cre],
   RStudio [cph]
 Repository: CRAN
-Date/Publication: 2020-04-07 18:50:02 UTC
+Date/Publication: 2020-05-28 20:30:03 UTC

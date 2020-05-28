@@ -1,17 +1,20 @@
-pin_download <- function(path,
-                         name,
-                         component,
-                         extract = FALSE,
-                         custom_etag = "",
-                         remove_query = FALSE,
-                         config = NULL,
-                         headers = NULL,
-                         can_fail = FALSE,
-                         cache = TRUE,
-                         content_length = 0,
-                         subpath = name,
-                         ...) {
+pin_download_one <- function(path,
+                             name,
+                             component,
+                             extract = FALSE,
+                             custom_etag = "",
+                             remove_query = FALSE,
+                             config = NULL,
+                             headers = NULL,
+                             can_fail = FALSE,
+                             cache = TRUE,
+                             content_length = 0,
+                             subpath = name,
+                             details = new.env(),
+                             ...) {
   must_download <- !cache
+
+  custom_etag <- if (is.na(custom_etag)) "" else custom_etag
 
   # clean up name in case it's a full url
   name <- gsub("^https?://", "", name)
@@ -47,7 +50,7 @@ pin_download <- function(path,
   report_error <- if (old_cache_missing) stop else warning
   catch_log <- function(e) tryCatch(e, error = function(e) { pin_log(e$message) ; NULL })
   catch_error <- if (old_cache_missing) function(e) e else function(e) tryCatch(e, error = function(e) { report_error(e$message) ; NULL })
-  if (can_fail) report_error <- function(e) NULL
+  if (can_fail) report_error <- function(e) { details$error <- e ; NULL }
 
   cache <- list()
   cache$etag <- old_cache$etag
@@ -59,6 +62,7 @@ pin_download <- function(path,
   extract_type <- NULL
 
   pin_log("Checking 'change_age' header (time, change age, max age): ", as.numeric(Sys.time()), ", ", cache$change_age, ", ", cache$max_age)
+  details$something_changed <- FALSE
 
   # skip downloading if max-age still valid
   if (as.numeric(Sys.time()) >= cache$change_age + cache$max_age || must_download) {
@@ -82,13 +86,16 @@ pin_download <- function(path,
       }
     }
 
+    etag_changed <- is.null(cache$etag) || !identical(old_cache$etag, cache$etag)
+
     # skip downloading if etag has not changed
-    if (old_cache_missing || !identical(old_cache$etag, cache$etag) || must_download) {
+    if (old_cache_missing || etag_changed || must_download) {
         download_name <- basename(path)
 
         if (remove_query) download_name <- strsplit(download_name, "\\?")[[1]][1]
         destination_path <- file.path(temp_path, download_name)
         pin_log("Downloading ", path, " to ", destination_path)
+        details$something_changed <- TRUE
 
         write_spec <- httr::write_disk(destination_path, overwrite = TRUE)
         result <- catch_error(httr::GET(path, write_spec, headers, config, http_utils_progress(size = content_length)))
@@ -141,6 +148,15 @@ pin_download <- function(path,
       path = if (is.null(old_pin$path)) relative_path else old_pin$path,
       cache = new_cache),
     component = component)
+
+  local_path
+}
+
+pin_download <- function(path, ...) {
+  for (p in path) {
+    if (length(path) > 1) pin_log("Downloading ", p, " from ", length(path), " downloads.")
+    local_path <- pin_download_one(p, ...)
+  }
 
   local_path
 }

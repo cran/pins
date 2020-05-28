@@ -1,3 +1,37 @@
+# pins 0.4.1
+
+## Pin
+
+- When running in production environments (which usually set the `R_CONFIG_ACTIVE`
+  environment variable), avoid using shared caches.
+
+- Fix `pin()` failing to update cache when server returns `NULL` etag.
+
+- Support for `custom_metadata` in `pin()` to allow saving custom fields
+  in `data.txt` file.
+  
+- Improve performannce for `pin()` from URLs containing large files that are
+  already been cached prerviously by `pin()` (#225).
+  
+- Avoid showing upload or download progress when creating R Markdown documents
+  and other non-interactive use cases (#227).
+  
+- When pin(url) fails and local cache exists, produce warning and retrieve
+  cached version (#231).
+  
+- Support for `pin(zip = TRUE)` to create a zip file of the given path before
+  creating the pin (#232).
+  
+## RStudio Connect
+
+- Fix when overriding pin with corrupt metadata.
+
+- Avoid using shared caches when running inside RStudio Connect.
+
+## Kaggle
+
+- Support to find and download competition datasets.
+
 # pins 0.4.0
 
 - Support for versioning in all boards.
