@@ -18,12 +18,17 @@ datatxt_refresh_index <- function(board) {
   }
   else {
     new_index <- board_manifest_get(temp_index)
-    current_names <- sapply(current_index, function(e) e$name)
-    for (new_entry in new_index) {
-      if (!new_entry$name %in% current_names) {
-        current_index[[length(current_index) + 1]] <- new_entry
+
+    # retain cache when refreshing board to avoid redownloads after board_register
+    new_index <- lapply(new_index, function(new_entry) {
+      current_entry <- Filter(function(e) identical(e$path, new_entry$path), current_index)
+      if (length(current_entry) == 1) {
+        new_entry$cache <- current_entry[[1]]$cache
       }
-    }
+      new_entry
+    })
+
+    current_index <- new_index
   }
 
   yaml::write_yaml(current_index, local_index)
@@ -213,10 +218,13 @@ datatxt_response_content <- function(response) {
 
 datatxt_update_index <- function(board, path, operation, name = NULL, metadata = NULL) {
   index_url <- file.path(board$url, "data.txt")
-  response <- httr::GET(index_url, board_datatxt_headers(board, index_url))
+  response <- httr::GET(index_url, board_datatxt_headers(board, "data.txt"))
 
   index <- list()
-  if (!httr::http_error(response)) {
+  if (httr::http_error(response)) {
+    stop("Failed to retrieve latest data.txt file, the pin was partially removed.")
+  }
+  else {
     content <- datatxt_response_content(response)
 
     index <- board_manifest_load(content)

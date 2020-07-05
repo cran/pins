@@ -37,10 +37,16 @@ rsconnect_token_initialize <- function(board) {
 
   if (is.null(board$server)) {
     board$server_name <- accounts$server[1]
-    board$server <- gsub("/__api__", "", deps$server_info(board$server_name)$url)
   }
 
   if (is.null(board$account)) board$account <- accounts[accounts$server == board$server_name,]$name
+
+  if (length(board$account) != 1) {
+    stop("Multiple accounts (", paste(board$account, collapse = ", "), ") are associated to this server, please specify the correct account parameter in board_register().")
+  }
+
+  # always use the url from rstudio to ensure redirects work properly even when the full path is not specified
+  board$server <- gsub("/__api__", "", deps$server_info(board$server_name)$url)
 
   board
 }

@@ -25,6 +25,7 @@ board_initialize.rsconnect <- function(board, ...) {
     board$server <-  gsub("/$", "", args$server)
     board$server_name <- gsub("https?://|(:[0-9]+)?/.*", "", args$server)
   }
+
   board$account <- args$account
   board$output_files <- args$output_files
 
@@ -41,6 +42,10 @@ board_initialize.rsconnect <- function(board, ...) {
   }
 
   board$pins_supported <- tryCatch(rsconnect_pins_supported(board), error = function(e) FALSE)
+
+  if (is.null(board$account )) {
+    board$account  <- rsconnect_api_get(board, "/__api__/users/current/")$username
+  }
 
   board
 }
@@ -63,14 +68,17 @@ board_pin_create.rsconnect <- function(board, path, name, metadata, code = NULL,
   x <- if (identical(dir(path, "data\\.rds"), "data.rds"))
     readRDS(dir(path, "data\\.rds", full.names = TRUE)) else path
 
+  if (grepl("/", name)) {
+    name_qualified <- name
+    name <- gsub(".*/", "", name_qualified)
+  }
+  else {
+    name_qualified <- paste0(board$account, "/", name)
+  }
+
   account_name <- board$account
   if (identical(board$output_files, TRUE)) {
     account_name <- "https://rstudio-connect-server/content/app-id"
-  }
-  else {
-    if (is.null(account_name)) {
-      account_name <- rsconnect_api_get(board, "/__api__/users/current/")$username
-    }
   }
 
   file.copy(dir(path, full.names = TRUE), temp_dir)
@@ -99,7 +107,9 @@ board_pin_create.rsconnect <- function(board, path, name, metadata, code = NULL,
     deps$output_metadata$set(rsc_output_files = file.path(knit_pin_dir, dir(knit_pin_dir, recursive = TRUE)))
   }
   else {
-    existing <- rsconnect_get_by_name(board, name)
+    previous_versions <- NULL
+
+    existing <- rsconnect_get_by_name(board, name_qualified)
     if (nrow(existing) == 0) {
       content <- rsconnect_api_post(board,
                                   paste0("/__api__/v1/experimental/content"),
@@ -118,6 +128,11 @@ board_pin_create.rsconnect <- function(board, path, name, metadata, code = NULL,
     }
     else {
       guid <- existing$guid
+
+      # when versioning is turned off we also need to clean up previous bundles so we store the current versions
+      if (!board_versions_enabled(board, TRUE)) {
+        previous_versions <- board_pin_versions(board, name_qualified)
+      }
 
       content <- rsconnect_api_post(board,
                                     paste0("/__api__/v1/experimental/content/", guid),
@@ -183,7 +198,20 @@ board_pin_create.rsconnect <- function(board, path, name, metadata, code = NULL,
     }
 
     # it might take a few seconds for the pin to register in rsc, see travis failures, wait 5s
-    rsconnect_wait_by_name(board, name)
+    result <- rsconnect_wait_by_name(board, name_qualified)
+
+    # when versioning is turned off we also need to clean up previous bundles
+    if (!board_versions_enabled(board, TRUE) && !is.null(previous_versions)) {
+      for (idx in 1:nrow(previous_versions)) {
+        delete_version <- previous_versions[idx,]
+
+        delete_path <- paste0("/__api__/v1/experimental/bundles/", delete_version$version)
+        pin_log("Deleting previous version ", delete_path)
+        rsconnect_api_delete(board, delete_path)
+      }
+    }
+
+    result
   }
 }
 

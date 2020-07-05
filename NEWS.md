@@ -1,3 +1,26 @@
+# pins 0.4.2
+
+## Website
+
+- Fix issue removing pins with custom domain names from cloud boards (#234).
+
+- Fix warning when using `pin()` against storage locations with custom domain name (#237).
+
+- Fix issue where datatxt was not refreshing deleted entries (#239).
+
+## RStudio Connect
+
+- Support for `versions = FALSE` in `board_register()` to avoid using too much space when
+  creating pins (#245).
+  
+- Prevent administrators from overriding pins they don't own, unless the pin is specified 
+  as `user/name` (#253).
+  
+- Support to connect to servers that have a redirect configured when the full server URL
+  is not specified in `board_register()` (#256).
+  
+- Throw error when multiple accounts are associated to the same server (#261).
+
 # pins 0.4.1
 
 ## Pin
@@ -27,6 +50,8 @@
 - Fix when overriding pin with corrupt metadata.
 
 - Avoid using shared caches when running inside RStudio Connect.
+
+- Fixed 'invalid uid' warning when creaating pin undner some Linux servers (#263).
 
 ## Kaggle
 
