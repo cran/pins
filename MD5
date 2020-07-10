@@ -1,12 +1,12 @@
-640e01d50d9ace5a3243126c9dc7b1f5 *DESCRIPTION
-fc23553eb5474106d5656b35100db9f4 *NAMESPACE
-61f4e41ba22c1d66e3f49ada1d3f95b6 *NEWS.md
+1067c8536d4e0c0ed698790ffceb6270 *DESCRIPTION
+c73b82b0c184e560b283e8169e6df365 *NAMESPACE
+77ff3095162b73fc081efd0cbc37f7ea *NEWS.md
 413848323f5d494323e78aeb0f999b12 *R/board.R
 f704af94ab8cd97ee5aa3b3b42fc1d5c *R/board_azure.R
-faccd2adb6719327db1b3e6b8d57c6cf *R/board_datatxt.R
+53d77a9c73db03919d9c5421dd02b4dd *R/board_datatxt.R
 4c3f9cb1e3445eef361a7d9e320db165 *R/board_datatxt_headers.R
 24151f38fc800b30060dd765956ff218 *R/board_dospaces.R
-981497d2cd99a7cf0597c7932929516b *R/board_extensions.R
+20be473ab34202cfd956accde171caa8 *R/board_extensions.R
 42c06e46482225c0ad9f691f93b794fe *R/board_gcloud.R
 79ebfadfdf2b18db6e570ac711ed5774 *R/board_github.R
 3bef5251bb14933fb5fb1a2be46ae2db *R/board_kaggle.R
@@ -132,7 +132,7 @@ b815cd5aa43d54eceb1285cbc284afe2 *man/board_register_rsconnect.Rd
 6f79de7d7678093a424f9fd4aa7cc3a5 *man/board_test.Rd
 53506c44fed060547c1f2c38e14cc30d *man/cranfiles.Rd
 0babfa2d50abaa962f147eb245a32dc5 *man/custom-boards-utils.Rd
-e7e8e3b5faee8b72c20571a0b187555f *man/custom-boards.Rd
+5711e4ad913efa2facd84d13705c3ed3 *man/custom-boards.Rd
 3b1e6afdf3b364c4631a144d953ab475 *man/custom-pins.Rd
 295ec1bcd1fa75c57a36ddb6bff7096e *man/figures/logo.png
 e041239261f99e074908d3f6c0a47f56 *man/pin.Rd

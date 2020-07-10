@@ -1,3 +1,13 @@
+# pins 0.4.3
+
+## Boards
+
+- Properly export `board_pin_versions` to allow custom boards extending versions (#265).
+
+## Website
+
+- Fix regression creating pins when using a brand new cloud board (#268).
+
 # pins 0.4.2
 
 ## Website
