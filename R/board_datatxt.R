@@ -1,7 +1,12 @@
 datatxt_refresh_index <- function(board) {
   if (is.null(board$url)) stop("Invalid 'url' in '", board$name, "' board.")
 
-  index_url <- file.path(board$url, "data.txt")
+  index_file <- "data.txt"
+  if (identical(board$index_randomize, TRUE)) {
+    index_file <- paste0(index_file, "?rand=", stats::runif(1) * 10^8)
+  }
+
+  index_url <- file.path(board$url, index_file)
 
   temp_index <- tempfile()
   response <- httr::GET(index_url,
@@ -40,6 +45,9 @@ board_initialize.datatxt <- function(board,
                                      url = NULL,
                                      needs_index = TRUE,
                                      browse_url = url,
+                                     bucket = NULL,
+                                     index_updated = NULL,
+                                     index_randomize = FALSE,
                                      ...) {
   if (identical(url, NULL)) stop("The 'datatxt' board requires a 'url' parameter.")
 
@@ -47,6 +55,9 @@ board_initialize.datatxt <- function(board,
   board$headers <- headers
   board$needs_index <- needs_index
   board$borwse_url <- browse_url
+  board$index_updated <- index_updated
+  board$bucket <- bucket
+  board$index_randomize <- index_randomize
 
   for (key in names(list(...))) {
     board[[key]] <- list(...)[[key]]
@@ -91,13 +102,18 @@ datatxt_pin_download_info <- function(board, name, ...) {
   )
 }
 
-datatxt_refresh_manifest <- function(board, name, ...) {
+datatxt_refresh_manifest <- function(board, name, download = TRUE, ...) {
   pin_info <- datatxt_pin_download_info(board, name, ...)
   path_guess <- pin_info$path_guess
   index_entry <- pin_info$index_entry
 
   download_path <- file.path(path_guess, "data.txt")
-  pin_download(download_path, name, board$name, can_fail = TRUE, headers = board_datatxt_headers(board, download_path))
+  pin_download(download_path,
+               name,
+               board$name,
+               can_fail = TRUE,
+               headers = board_datatxt_headers(board, download_path),
+               download = download)
 
   list(
     path_guess = path_guess,
@@ -106,8 +122,8 @@ datatxt_refresh_manifest <- function(board, name, ...) {
   )
 }
 
-board_pin_get.datatxt <- function(board, name, extract = NULL, version = NULL, ...) {
-  manifest_paths <- datatxt_refresh_manifest(board, name, ...)
+board_pin_get.datatxt <- function(board, name, extract = NULL, version = NULL, download = TRUE, ...) {
+  manifest_paths <- datatxt_refresh_manifest(board, name, download = download, ...)
   path_guess <- manifest_paths$path_guess
   index_entry <- manifest_paths$index_entry
   download_path <- manifest_paths$download_path
@@ -165,7 +181,8 @@ board_pin_get.datatxt <- function(board, name, extract = NULL, version = NULL, .
                                name,
                                board$name,
                                extract = identical(extract, TRUE),
-                               headers = board_datatxt_headers(board, path))
+                               headers = board_datatxt_headers(board, path),
+                               download = download)
   }
 
   local_path
@@ -217,8 +234,18 @@ datatxt_response_content <- function(response) {
 }
 
 datatxt_update_index <- function(board, path, operation, name = NULL, metadata = NULL) {
-  index_url <- file.path(board$url, "data.txt")
-  response <- httr::GET(index_url, board_datatxt_headers(board, "data.txt"))
+  index_file <- "data.txt"
+  index_url <- file.path(board$url, index_file)
+
+  index_file_get <- "data.txt"
+  if (identical(board$index_randomize, TRUE)) {
+    # some boards cache bucket files by default which can be avoided by changing the url
+    index_file_get <- paste0(index_file, "?rand=", stats::runif(1) * 10^8)
+  }
+
+  response <- httr::GET(
+    file.path(board$url, index_file_get),
+    board_datatxt_headers(board, index_file_get))
 
   index <- list()
   if (httr::http_error(response)) {
@@ -261,6 +288,10 @@ datatxt_update_index <- function(board, path, operation, name = NULL, metadata =
 
   if (httr::http_error(response)) {
     stop("Failed to update data.txt file: ", datatxt_response_content(response))
+  }
+
+  if (!identical(board$index_updated, NULL) && identical(operation, "create")) {
+    board$index_updated(board)
   }
 }
 

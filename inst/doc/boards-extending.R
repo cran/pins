@@ -34,3 +34,24 @@ board_pin_remove.folder <- function(board, name, ...) {
   unlink(file.path("pins", name), recursive = TRUE)
 }
 
+## ----eval=FALSE----------------------------------------------------------
+#  #' @importFrom pins board_initialize
+#  #' @export
+#  pins::board_initialize
+#  
+#  #' @importFrom pins board_pin_create
+#  #' @export
+#  pins::board_pin_create
+#  
+#  #' @importFrom pins board_pin_get
+#  #' @export
+#  pins::board_pin_get
+#  
+#  #' @importFrom pins board_pin_find
+#  #' @export
+#  pins::board_pin_find
+#  
+#  #' @importFrom pins board_pin_remove
+#  #' @export
+#  pins::board_pin_remove
+
