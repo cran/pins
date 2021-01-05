@@ -1,3 +1,70 @@
+# pins 0.4.5
+
+## Pins
+
+- Support downloading remote files when service returns incompatible
+  `data.txt` file (#310).
+  
+- Support for pins over 100MB in Windows systems (#313).
+
+- Avoid Windows crashing in `pin()` under some locales (#127).
+
+## Boards
+
+- Silenced 'no encoding supplied' warning (#330).
+
+## Local
+
+- `pin_find()` no longer searches text with an undocumented
+  regular expression syntax (#270).
+
+## S3
+
+- Default to using HTTPS in S3 boards (#304).
+
+- Support for AWS V4 signatures when registering S3 boards with
+  `region` parameter (#304)
+
+## Cloud
+
+- Support for `path` to register a board under a subpath for
+  Azure, DigitalOcean, Google Cloud and S3 boards (#200).
+
+- Avoid creating pins named with unsupported characters for
+  Azure, DigitalOcean, Google Cloud and S3 boards (#193).
+
+## GitHub
+
+- Properly store relative paths when `path` parameter is
+  specified in GitHub boards (#199).
+  
+- Add support for repos with a 'main' branch as default (#336).
+
+- Add support for large file in private repo releases (#292).
+
+- When a board is registered with `versions = FALSE`, GitHub
+  tags are also delete when large files are present (#285).
+
+## RStudio Connect
+
+- Invalid 'account' or 'server' parameters show proper errors (#296).
+
+- Increase total entries retrieved with `pin_find()`, configurable with
+  `pins.search.count` (#296).
+  
+- Fix regression introduced in pins 0.4.2 (#253) preventing users from
+  collaborating on existing pins they have access to (#302).
+  
+- Avoid deleting pin when upload fails to avoid deleting versions (#306).
+
+- Support re-creating pins from pins not previously properly updated (#308).
+
+- Adjust pin preview to only display 1K rows instead of 10K (#315).
+
+- Avoid changing columns names on data frame preview (#190).
+
+- Improve error message when token authentication fails (#327).
+
 # pins 0.4.4
 
 ## Pins

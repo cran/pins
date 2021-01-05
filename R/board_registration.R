@@ -47,7 +47,7 @@ board_register_local <- function(name = "local",
 #' @param name Optional name for this board, defaults to 'github'.
 #' @param repo The GitHub repository formatted as 'owner/repo', can be
 #'   \code{NULL} if the \code{GITHUB_PAT} environment variable is set.
-#' @param branch The branch to use when commiting pins.
+#' @param branch The branch to use to commit pins.
 #' @param token Token to use when \code{GITHUB_PAT} is not specified.
 #' @param path The subdirectory in the repo where the pins will be stored.
 #' @param host The URL hosting the GitHub API, defaults to \code{"https://api.github.com"}.
@@ -77,7 +77,7 @@ board_register_local <- function(name = "local",
 #' @export
 board_register_github <- function(name = "github",
                                   repo = NULL,
-                                  branch = "master",
+                                  branch = NULL,
                                   token = NULL,
                                   path = "",
                                   host = "https://api.github.com",
@@ -226,6 +226,8 @@ board_register_datatxt <- function(url,
 #'   variable.
 #' @param cache The local folder to use as a cache, defaults to \code{board_cache_path()}.
 #' @param host The host to use for storage, defaults to \code{"s3.amazonaws.com"}.
+#' @param region The region to use, required in some AWS regions and to enable V4 signatures.
+#' @param path The subdirectory in the repo where the pins will be stored.
 #' @param ... Additional parameters required to initialize a particular board.
 #'
 #' @details
@@ -233,6 +235,8 @@ board_register_datatxt <- function(url,
 #' This function requires an Amazon S3 bucket to be manually created; otherwise,
 #' registering an S3 board will fail.
 #'
+#' When the \code{region} parameter is not specified, \code{pins} defaults to using AWS V2 signatures;
+#' therefore, it is recommended to specify the region to ensure \code{pins} makes use of AWS V4 signatures.
 #' @seealso board_register
 #'
 #' @examples
@@ -247,6 +251,8 @@ board_register_s3 <- function(name = "s3",
                               secret = Sys.getenv("AWS_SECRET_ACCESS_KEY"),
                               cache = board_cache_path(),
                               host = "s3.amazonaws.com",
+                              region = NULL,
+                              path = NULL,
                               ...) {
   board_register("s3",
                  name = name,
@@ -254,6 +260,8 @@ board_register_s3 <- function(name = "s3",
                  key = key,
                  secret = secret,
                  cache = cache,
+                 region = region,
+                 path = path,
                  ...)
 }
 
@@ -270,6 +278,7 @@ board_register_s3 <- function(name = "s3",
 #' @param key The key of the Azure Storage container Defaults to the \code{AZURE_STORAGE_KEY} environment
 #'   variable.
 #' @param cache The local folder to use as a cache, defaults to \code{board_cache_path()}.
+#' @param path The subdirectory in the repo where the pins will be stored.
 #' @param ... Additional parameters required to initialize a particular board.
 #'
 #' @details
@@ -292,6 +301,7 @@ board_register_azure <- function(name = "azure",
                                  account = Sys.getenv("AZURE_STORAGE_ACCOUNT"),
                                  key = Sys.getenv("AZURE_STORAGE_KEY"),
                                  cache = board_cache_path(),
+                                 path = NULL,
                                  ...) {
   board_register("azure",
                  name = name,
@@ -299,6 +309,7 @@ board_register_azure <- function(name = "azure",
                  container = container,
                  key = key,
                  cache = cache,
+                 path = path,
                  ...)
 }
 
@@ -312,6 +323,7 @@ board_register_azure <- function(name = "azure",
 #'   variable.
 #' @param token The access token of the Google Cloud Storage container. Defaults to use the Google Cloud SDK if configured.
 #' @param cache The local folder to use as a cache, defaults to \code{board_cache_path()}.
+#' @param path The subdirectory in the repo where the pins will be stored.
 #' @param ... Additional parameters required to initialize a particular board.
 #'
 #' @details
@@ -331,12 +343,14 @@ board_register_gcloud <- function(name = "gcloud",
                                   bucket = Sys.getenv("GCLOUD_STORAGE_BUCKET"),
                                   token = NULL,
                                   cache = board_cache_path(),
+                                  path = NULL,
                                   ...) {
   board_register("gcloud",
                  name = name,
                  bucket = bucket,
                  token = token,
                  cache = cache,
+                 path = path,
                  ...)
 }
 
@@ -356,6 +370,7 @@ board_register_gcloud <- function(name = "gcloud",
 #'   variable.
 #' @param cache The local folder to use as a cache, defaults to \code{board_cache_path()}.
 #' @param host The host to use for storage, defaults to \code{"digitaloceanspaces.com"}.
+#' @param path The subdirectory in the repo where the pins will be stored.
 #' @param ... Additional parameters required to initialize a particular board.
 #'
 #' @details
@@ -378,6 +393,7 @@ board_register_dospace <- function(name = "dospace",
                                    datacenter = Sys.getenv("DO_DATACENTER"),
                                    cache = board_cache_path(),
                                    host = "digitaloceanspaces.com",
+                                   path = NULL,
                                    ...) {
   board_register("dospace",
                  name = name,
@@ -387,5 +403,6 @@ board_register_dospace <- function(name = "dospace",
                  datacenter = datacenter,
                  cache = cache,
                  host = host,
+                 path = path,
                  ...)
 }

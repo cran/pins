@@ -34,6 +34,25 @@ board_pin_remove.folder <- function(board, name, ...) {
   unlink(file.path("pins", name), recursive = TRUE)
 }
 
+## ------------------------------------------------------------------------
+board_pin_versions.folder <- function(board, name, ...) {
+  data.frame( 
+     version = 1
+  )
+}
+
+board_pin_get.folder <- function(board, name, version = NULL, ...) {
+  if (!is.null(version)) message("Version ", version, " requested!")
+  file.path("pins", name)
+}
+
+## ------------------------------------------------------------------------
+library(pins)
+board_register("folder")
+
+pin(iris, board = "folder")
+pin_get("iris", board = "folder")
+
 ## ----eval=FALSE----------------------------------------------------------
 #  #' @importFrom pins board_initialize
 #  #' @export
@@ -54,4 +73,8 @@ board_pin_remove.folder <- function(board, name, ...) {
 #  #' @importFrom pins board_pin_remove
 #  #' @export
 #  pins::board_pin_remove
+#  
+#  #' @importFrom pins board_pin_versions
+#  #' @export
+#  pins::board_pin_versions
 

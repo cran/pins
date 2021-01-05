@@ -33,9 +33,11 @@ board_pin_store <- function(board, path, name, description, type, metadata, extr
     datatxt_path <- file.path(path, "data.txt")
     local_path <- pin_download(datatxt_path, name, board_default(), can_fail = TRUE)
     if (!is.null(local_path)) {
-      manifest <- pin_manifest_get(local_path)
-      path <- paste(path, manifest$path, sep = "/")
-      extract <- FALSE
+      manifest <- tryCatch(pin_manifest_get(local_path), error = function(e) { unlink(file.path(local_path, "data.txt")) ; NULL })
+      if (!is.null(manifest) && !is.null(manifest$path)) {
+        path <- paste(path, manifest$path, sep = "/")
+        extract <- FALSE
+      }
     }
   }
 
@@ -74,7 +76,7 @@ board_pin_store <- function(board, path, name, description, type, metadata, extr
 
       if (details$something_changed) {
         copy_or_link <- function(from, to) {
-          if (file.exists(from) && file.info(from)$size >= getOption("pins.link.size", 10^8))
+          if (file.exists(from) && file.info(from)$size >= getOption("pins.link.size", 10^8) && .Platform$OS.type != "windows")
             fs::link_create(from, file.path(to, basename(from)))
           else
             file.copy(from, to, recursive = TRUE)
@@ -102,6 +104,13 @@ board_pin_store <- function(board, path, name, description, type, metadata, extr
       metadata <- pins_merge_custom_metadata(metadata, custom_metadata)
 
       pin_manifest_create(store_path, metadata, dir(store_path, recursive = TRUE))
+
+      for (metaname in names(metadata)) {
+        # see issues/127 which requires encoding to prevent windows crashes
+        if (is.character(metadata[metaname])) {
+          metadata[metaname] <- enc2utf8(metadata[metaname])
+        }
+      }
     }
 
     board_pin_create(board, store_path, name = name, metadata = metadata, ...)

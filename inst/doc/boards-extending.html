@@ -335,26 +335,75 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb1-19" title="19">board_pin_remove.folder &lt;-<span class="st"> </span><span class="cf">function</span>(board, name, ...) {</a>
 <a class="sourceLine" id="cb1-20" title="20">  <span class="kw">unlink</span>(<span class="kw">file.path</span>(<span class="st">&quot;pins&quot;</span>, name), <span class="dt">recursive =</span> <span class="ot">TRUE</span>)</a>
 <a class="sourceLine" id="cb1-21" title="21">}</a></code></pre></div>
+<p>You can optionally support data versions in your board to enable <code>pin_versions()</code> and <code>pin_get(&quot;name&quot;, version = &quot;version&quot;)</code> by extending <code>board_pin_versions</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">board_pin_versions.folder &lt;-<span class="st"> </span><span class="cf">function</span>(board, name, ...) {</a>
+<a class="sourceLine" id="cb2-2" title="2">  <span class="kw">data.frame</span>( </a>
+<a class="sourceLine" id="cb2-3" title="3">     <span class="dt">version =</span> <span class="dv">1</span></a>
+<a class="sourceLine" id="cb2-4" title="4">  )</a>
+<a class="sourceLine" id="cb2-5" title="5">}</a>
+<a class="sourceLine" id="cb2-6" title="6"></a>
+<a class="sourceLine" id="cb2-7" title="7">board_pin_get.folder &lt;-<span class="st"> </span><span class="cf">function</span>(board, name, <span class="dt">version =</span> <span class="ot">NULL</span>, ...) {</a>
+<a class="sourceLine" id="cb2-8" title="8">  <span class="cf">if</span> (<span class="op">!</span><span class="kw">is.null</span>(version)) <span class="kw">message</span>(<span class="st">&quot;Version &quot;</span>, version, <span class="st">&quot; requested!&quot;</span>)</a>
+<a class="sourceLine" id="cb2-9" title="9">  <span class="kw">file.path</span>(<span class="st">&quot;pins&quot;</span>, name)</a>
+<a class="sourceLine" id="cb2-10" title="10">}</a></code></pre></div>
+<p>You can then use this <code>folder</code> board like any other board:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">library</span>(pins)</a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="kw">board_register</span>(<span class="st">&quot;folder&quot;</span>)</a>
+<a class="sourceLine" id="cb3-3" title="3"></a>
+<a class="sourceLine" id="cb3-4" title="4"><span class="kw">pin</span>(iris, <span class="dt">board =</span> <span class="st">&quot;folder&quot;</span>)</a>
+<a class="sourceLine" id="cb3-5" title="5"><span class="kw">pin_get</span>(<span class="st">&quot;iris&quot;</span>, <span class="dt">board =</span> <span class="st">&quot;folder&quot;</span>)</a></code></pre></div>
+<pre><code>## # A tibble: 150 x 5
+##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+##           &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  
+##  1          5.1         3.5          1.4         0.2 setosa 
+##  2          4.9         3            1.4         0.2 setosa 
+##  3          4.7         3.2          1.3         0.2 setosa 
+##  4          4.6         3.1          1.5         0.2 setosa 
+##  5          5           3.6          1.4         0.2 setosa 
+##  6          5.4         3.9          1.7         0.4 setosa 
+##  7          4.6         3.4          1.4         0.3 setosa 
+##  8          5           3.4          1.5         0.2 setosa 
+##  9          4.4         2.9          1.4         0.2 setosa 
+## 10          4.9         3.1          1.5         0.1 setosa 
+## # … with 140 more rows</code></pre>
+<pre><code># A tibble: 150 x 5
+   Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+          &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  
+ 1          5.1         3.5          1.4         0.2 setosa 
+ 2          4.9         3            1.4         0.2 setosa 
+ 3          4.7         3.2          1.3         0.2 setosa 
+ 4          4.6         3.1          1.5         0.2 setosa 
+ 5          5           3.6          1.4         0.2 setosa 
+ 6          5.4         3.9          1.7         0.4 setosa 
+ 7          4.6         3.4          1.4         0.3 setosa 
+ 8          5           3.4          1.5         0.2 setosa 
+ 9          4.4         2.9          1.4         0.2 setosa 
+10          4.9         3.1          1.5         0.1 setosa 
+# … with 140 more rows</code></pre>
 <p>To extend <code>pins</code> in a separate package, make sure to export the s3 generics from <code>pins</code>. For example:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="co">#&#39; @importFrom pins board_initialize</span></a>
-<a class="sourceLine" id="cb2-2" title="2"><span class="co">#&#39; @export</span></a>
-<a class="sourceLine" id="cb2-3" title="3">pins<span class="op">::</span>board_initialize</a>
-<a class="sourceLine" id="cb2-4" title="4"></a>
-<a class="sourceLine" id="cb2-5" title="5"><span class="co">#&#39; @importFrom pins board_pin_create</span></a>
-<a class="sourceLine" id="cb2-6" title="6"><span class="co">#&#39; @export</span></a>
-<a class="sourceLine" id="cb2-7" title="7">pins<span class="op">::</span>board_pin_create</a>
-<a class="sourceLine" id="cb2-8" title="8"></a>
-<a class="sourceLine" id="cb2-9" title="9"><span class="co">#&#39; @importFrom pins board_pin_get</span></a>
-<a class="sourceLine" id="cb2-10" title="10"><span class="co">#&#39; @export</span></a>
-<a class="sourceLine" id="cb2-11" title="11">pins<span class="op">::</span>board_pin_get</a>
-<a class="sourceLine" id="cb2-12" title="12"></a>
-<a class="sourceLine" id="cb2-13" title="13"><span class="co">#&#39; @importFrom pins board_pin_find</span></a>
-<a class="sourceLine" id="cb2-14" title="14"><span class="co">#&#39; @export</span></a>
-<a class="sourceLine" id="cb2-15" title="15">pins<span class="op">::</span>board_pin_find</a>
-<a class="sourceLine" id="cb2-16" title="16"></a>
-<a class="sourceLine" id="cb2-17" title="17"><span class="co">#&#39; @importFrom pins board_pin_remove</span></a>
-<a class="sourceLine" id="cb2-18" title="18"><span class="co">#&#39; @export</span></a>
-<a class="sourceLine" id="cb2-19" title="19">pins<span class="op">::</span>board_pin_remove</a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="co">#&#39; @importFrom pins board_initialize</span></a>
+<a class="sourceLine" id="cb6-2" title="2"><span class="co">#&#39; @export</span></a>
+<a class="sourceLine" id="cb6-3" title="3">pins<span class="op">::</span>board_initialize</a>
+<a class="sourceLine" id="cb6-4" title="4"></a>
+<a class="sourceLine" id="cb6-5" title="5"><span class="co">#&#39; @importFrom pins board_pin_create</span></a>
+<a class="sourceLine" id="cb6-6" title="6"><span class="co">#&#39; @export</span></a>
+<a class="sourceLine" id="cb6-7" title="7">pins<span class="op">::</span>board_pin_create</a>
+<a class="sourceLine" id="cb6-8" title="8"></a>
+<a class="sourceLine" id="cb6-9" title="9"><span class="co">#&#39; @importFrom pins board_pin_get</span></a>
+<a class="sourceLine" id="cb6-10" title="10"><span class="co">#&#39; @export</span></a>
+<a class="sourceLine" id="cb6-11" title="11">pins<span class="op">::</span>board_pin_get</a>
+<a class="sourceLine" id="cb6-12" title="12"></a>
+<a class="sourceLine" id="cb6-13" title="13"><span class="co">#&#39; @importFrom pins board_pin_find</span></a>
+<a class="sourceLine" id="cb6-14" title="14"><span class="co">#&#39; @export</span></a>
+<a class="sourceLine" id="cb6-15" title="15">pins<span class="op">::</span>board_pin_find</a>
+<a class="sourceLine" id="cb6-16" title="16"></a>
+<a class="sourceLine" id="cb6-17" title="17"><span class="co">#&#39; @importFrom pins board_pin_remove</span></a>
+<a class="sourceLine" id="cb6-18" title="18"><span class="co">#&#39; @export</span></a>
+<a class="sourceLine" id="cb6-19" title="19">pins<span class="op">::</span>board_pin_remove</a>
+<a class="sourceLine" id="cb6-20" title="20"></a>
+<a class="sourceLine" id="cb6-21" title="21"><span class="co">#&#39; @importFrom pins board_pin_versions</span></a>
+<a class="sourceLine" id="cb6-22" title="22"><span class="co">#&#39; @export</span></a>
+<a class="sourceLine" id="cb6-23" title="23">pins<span class="op">::</span>board_pin_versions</a></code></pre></div>
 </div>
 
 

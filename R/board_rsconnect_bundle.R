@@ -43,7 +43,7 @@ rsconnect_bundle_create.data.frame <- function(x, temp_dir, name, board, account
 
   add_user_html(temp_dir)
 
-  max_rows <- min(nrow(x), getOption("pins.preview.rows", 10^4))
+  max_rows <- min(nrow(x), getOption("pins.preview.rows", 10^3))
 
   csv_name <- dir(temp_dir, "data\\.csv")
 
@@ -57,7 +57,7 @@ rsconnect_bundle_create.data.frame <- function(x, temp_dir, name, board, account
         rep("...", nrow(x_preview))
     } else
       e
-  }), stringsAsFactors = FALSE)
+  }), stringsAsFactors = FALSE, check.names = FALSE)
 
   data_preview <- list(
     columns = lapply(colnames(x_preview), function(e) {
