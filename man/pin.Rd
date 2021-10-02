@@ -2,7 +2,7 @@
 % Please edit documentation in R/pin.R
 \name{pin}
 \alias{pin}
-\title{Pin Resource}
+\title{Pin a resource (legacy API)}
 \usage{
 pin(x, name = NULL, description = NULL, board = NULL, ...)
 }
@@ -32,38 +32,20 @@ In addition, \code{pin()} still works when working offline or when the remote re
 becomes unavailable; when this happens, a warning will be triggered but your code will
 continue to work.
 
-\code{pin()} will stores data frames in two files, an R native file and a 'CSV' file. To
-force saving a pin only using R's native (RDS) format, you can use \code{pin(I(data))}.
+\code{pin()} stores data frames in two files, an R native file (RDS) and a 'CSV' file. To
+force saving a pin in R's native format only, you can use \code{pin(I(data))}.
 This can improve performance and size at the cost of making the pin unreadable from other
 tools and programming languages.
 }
 \examples{
-library(pins)
-
-# define local board
+# old API
 board_register_local(cache = tempfile())
-
-# cache the mtcars dataset
 pin(mtcars)
+pin_get("mtcars")
 
-# cache computation over mtcars
-mtcars[mtcars$mpg > 30,] \%>\%
-  pin(name = "mtefficient")
-
-# retrieve cached pin
-pin_get("mtefficient")
-
-# url to remote resource
-resource <- file.path("https://raw.githubusercontent.com/facebook/prophet",
-                      "master/examples/example_retail_sales.csv")
-
-# cache remote resource
-pin(resource, name = "example_retail_sales")
-
-# load cached csv
-pin_get("example_retail_sales") \%>\% read.csv()
-
-# cache and read csv
-read.csv(pin(resource))
+# new api
+board <- board_local()
+board \%>\% pin_write(mtcars)
+board \%>\% pin_read("mtcars")
 
 }

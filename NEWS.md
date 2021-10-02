@@ -1,3 +1,121 @@
+# pins 1.0.0
+
+pins 1.0.0 includes a new, more explicit, API that includes robust support for versioning. In the modern API, you create a board object which is passed to every `pin_` function instead of "registering" a board that is later refereed to with a string. This leads to code like this:
+
+```R
+board <- board_local()
+board %>% pin_write(mtcars, "mtcars")
+board %>% pin_read("mtcars")
+```
+
+The legacy API (`pin()`, `pin_get()`, and `board_register()`) will continue to work, but new features will only be implemented with the new API, so we encourage you to switch to the modern API as quickly as possible. Learn more in `vignette("pins-update")`.
+
+## Modern pin functions
+
+* `pin_read()` and `pin_write()` replace most uses of `pin_get()` and `pin()`.
+  `pin_write()` has a `type` argument that allows you to choose how to serialise
+  your R objects to disk, allowing you to manage the tradeoffs between speed, 
+  generality, and language inter-op, and a `metadata` argument that allows you 
+  to store arbitrary metadata (#430).
+  
+* `pin_download()` and `pin_upload()` are lower-level versions of `pin_read()` 
+  and `pin_write()` that work with file paths rather than R objects. They
+  replace the use of `pin()` with a path and eliminate the type-instability
+  in `pin_get()`, which can return either an R object or a character vector of
+  paths.
+
+* `pin_browse()` replaces `board_browse()`, and takes you to a specific pin, 
+  either the original source on the internet, or the cached version on your 
+  local file system (#435).
+
+* `pin_delete()` replaces `pin_remove()`, and can delete multiple pins (#433).
+
+* `pin_list()` lists all pins in a board.
+
+* `pin_meta()` replaces `pin_info()` and retrieves pin metadata (#418). 
+
+* `pin_search()` replaces `pin_find()`. It is much more limited because the
+  previous version was based on assumptions that are not true for many boards.
+
+* `pin_reactive_read()` and `pin_reactive_download()` replace `pin_reactive()`.
+
+* `pin_exists()` reports whether or not a pin exists.
+
+* `pin_version_delete()` allows you to delete a single version.
+  `pin_versions_prune()` (#459) allows you to easily prune old versions keeping
+  either a specified number of versions, or all versions beneath a certain age.
+
+## Modern boards
+
+This version includes the following modern boards:
+
+* `board_azure()` stores data in Azure's blob storage. It is built on top of 
+  [AzureStor](https://github.com/Azure/AzureStor) (#474).
+
+* `board_folder()` is a generalised replacement for the legacy local board.
+  `board_folder()` can store data in any directory, making it possible to 
+  share boards using shared network drives or on dropbox or similar. If you
+  using pins casually and don't want to pick a directory, `board_local()` 
+  is a variant of `board_folder()` that stores data in a system data directory.
+  
+* `board_kaggle_dataset()` and `board_kaggle_competition()` allow you to
+  download data from Kaggle. The data is automatically cached so that it's
+  only downloaded when it changes.
+
+* `board_ms365()` allow to pin data to MS One Drive and Sharpoint
+   (#498, @hongooi73).
+
+* `board_rsconnect()` shares data on 
+  [RStudio connect](https://www.rstudio.com/products/connect/). This board 
+  supports both modern and legacy APIs, so that you and your colleagues can use 
+  a mixture of pins versions as you transition to pins 1.0.0. Note that the
+  compatibility is one directional: you can `pin_read()` pins created by 
+  `pin()`, but you can't `pin_get()` pins created by `pin_write()`.
+  
+* `board_s3()` stores data in Amazon's S3 service. It is built on top of 
+  [paws](https://paws-r.github.io).
+
+* `board_url()` lets you create a manual board from a vector of URLs. This is 
+  useful because `pin_donwload()` and `pin_read()` are cached, so they only 
+  re-download the data if it has changed since the last time you used it (#409). 
+  This board is a replacement for `pin()`'s ability to work directly with URLs
+
+The legacy boards will continue to work with the legacy pins API; we will implement modern versions of the remaining legacy boards based on user feedback.
+
+## Minor improvements and bug fixes
+
+* All board objects now have class beginning with `pins_board_` and also
+  inherit from common superclass `pins_board`.
+
+* Pins no longer works with the connections pane. This automatically registered
+  code tended to be either dangerous (because it's easy to accidentally leak 
+  credentials) or useless (because it relied on variables that the connection 
+  pane doesn't capture).
+
+* Pinned data frames are longer converted to tibbles.
+
+* The "packages" board is no longer registered by default; if you want to use
+  this you'll need to register with `board_register("packages")`. It has been
+  radically simplified so that it will no longer download packages, and it
+  `pin_find()` now searches all packages that you have installed, rather than
+  a stale snapshot of data in CRAN packages. The CRAN files dataset has
+  been removed from the package.
+
+* `board_browse()` now works with local boards.
+
+* `board_rsconnect()` will automatically connect to the current RSC pin board
+  when run inside RSC itself (assuming you have version 1.8.8 or later) (#396).
+
+* `cache_browse()`, `cache_info()`, and `cache_prune()` provide some basic
+  tooling around the local pins cache maintained by pins (#438).
+
+* `pin_fetch()` has been removed
+
+* `option(pins.invisible)` is now defunct and ignored. 
+
+* You can no longer switch from a versioned pin to an unversioned pin without
+  first deleting the pin (#410).
+
 # pins 0.4.5
 
 ## Pins

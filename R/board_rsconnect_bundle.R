@@ -1,163 +1,113 @@
+rsc_bundle <- function(board, name, paths, metadata, x = NULL, bundle_path = tempfile()) {
+  fs::dir_create(bundle_path)
 
-add_user_html <- function(dir, path = getOption("RSCONNECT_HTML_PATH", "")) {
-  if (path != "") {
-    file.copy(path, file.path(dir, "index.html"), overwrite = TRUE)
-  }
+  # Bundle contains:
+  # * pin
+  fs::file_copy(paths, fs::path(bundle_path, fs::path_file(paths)))
+
+  # * data.txt (used to retrieve pins)
+  write_yaml(metadata, fs::path(bundle_path, "data.txt"))
+
+  # * index.html
+  rsc_bundle_preview_create(board, name, metadata, path = bundle_path, x = x)
+
+  # * manifest.json (used for deployment)
+  manifest <- rsc_bundle_manifest(board, bundle_path)
+  jsonlite::write_json(manifest, fs::path(bundle_path, "manifest.json"), auto_unbox = TRUE)
+
+  invisible(bundle_path)
 }
 
-rsconnect_bundle_template_html <- function(temp_dir, template, value) {
-  html_file <- file.path(temp_dir, "index.html")
-  html_index <- readLines(html_file)
-  value <- gsub("\\n", "\\\\n", value, fixed = TRUE)
-  html_index <- gsub(paste0("{{", template, "}}"), value, html_index, fixed = TRUE)
-  writeLines(html_index, html_file)
+# Extracted from rsconnect:::createAppManifest
+rsc_bundle_manifest <- function(board, path) {
+  files <- fs::path_rel(fs::dir_ls(path, recurse = TRUE, type = "file"), path)
+
+  list(
+    version = 1,
+    locale = "en_US",
+    platform = "3.5.1",
+    metadata = list(
+      appmode = "static",
+      primary_rmd = NA,
+      primary_html = "index.html",
+      content_category = "pin",
+      has_parameters = FALSE
+    ),
+    packages = NA,
+    files = files,
+    users = NA
+  )
 }
 
-rsconnect_bundle_files_html <- function(files) {
-  html <- ""
-  for (file in files) {
-    html <- paste0(html, "<a href=\"", file, "\">", file, "</a> ")
-  }
+rsc_bundle_preview_create <- function(board, name, x, metadata, path) {
+  # Copy support files
+  template <- fs::dir_ls(fs::path_package("pins", "preview"))
+  file.copy(template, path, recursive = TRUE)
 
-  html
+  # Update index template with pin data
+  index <- rsc_bundle_preview_index(board, name, x, metadata)
+  writeLines(index, fs::path(path, "index.html"))
+
+  invisible(path)
 }
 
-rsconnect_bundle_template_common <- function(temp_dir, style, name, board, account_name, retrieve_command = NULL) {
-  rsconnect_bundle_template_html(temp_dir, "data_preview_style", style)
-  rsconnect_bundle_template_html(temp_dir, "pin_name", name)
-  if (is.character(board$server))
-    rsconnect_bundle_template_html(temp_dir, "server_name", board$server)
-  else
-    rsconnect_bundle_template_html(temp_dir, "server_name", "https://rstudio-connect-server")
-  rsconnect_bundle_template_html(temp_dir, "account_name", account_name)
+rsc_bundle_preview_index <- function(board, name, x, metadata) {
+  data_preview <- rsc_bundle_preview_data(x)
 
-  if (is.null(retrieve_command)) retrieve_command <- paste0("pin_get(\"", account_name, "/", name, "\", board = \"rsconnect\")")
-  rsconnect_bundle_template_html(temp_dir, "retrieve_pin", retrieve_command)
-}
-
-rsconnect_bundle_create.data.frame <- function(x, temp_dir, name, board, account_name, retrieve_command = NULL) {
-  file.copy(
-    dir(system.file("views/data", package = "pins"), full.names = TRUE),
-    temp_dir,
-    recursive = TRUE)
-
-  add_user_html(temp_dir)
-
-  max_rows <- min(nrow(x), getOption("pins.preview.rows", 10^3))
-
-  csv_name <- dir(temp_dir, "data\\.csv")
-
-  x_preview <- utils::head(x, n = max_rows)
-  x_preview <- data.frame(lapply(x_preview, function(e) {
-    if (!is.numeric(e) || !is.integer(e) || !is.logical(e) || !is.double(e)) {
-      char_column <- as.character(e)
-      if (length(char_column) == nrow(x_preview))
-        char_column
-      else
-        rep("...", nrow(x_preview))
-    } else
-      e
-  }), stringsAsFactors = FALSE, check.names = FALSE)
-
-  data_preview <- list(
-    columns = lapply(colnames(x_preview), function(e) {
-      list(
-        align = "right",
-        label = e,
-        name = e,
-        type = ""
-      )
-    }),
-    data = x_preview,
-    options = list(
-      columns = list( max = 10 ),
-      rows = list (min = 1, total = nrow(x_preview))
-    )
+  data <- list(
+    pin_files = paste0("<a href=\"", metadata$file, "\">", metadata$file, "</a>", collapse = ", "),
+    data_preview = jsonlite::toJSON(data_preview, auto_unbox = TRUE),
+    data_preview_style = if (is.data.frame(x)) "" else "display:none",
+    pin_name = paste0(board$account, "/", name),
+    pin_metadata = jsonlite::toJSON(metadata, auto_unbox = TRUE, pretty = TRUE),
+    board_deparse = paste0(expr_deparse(board_deparse(board)), collapse = "\n")
   )
 
-  rsconnect_bundle_template_html(temp_dir, "files_html", rsconnect_bundle_files_html(csv_name))
-  rsconnect_bundle_template_html(temp_dir, "data_preview", jsonlite::toJSON(data_preview))
-  rsconnect_bundle_template_common(temp_dir, "", name, board, account_name, retrieve_command)
-
-  "data.rds"
+  template <- readLines(fs::path_package("pins", "preview", "index.html"))
+  whisker::whisker.render(template, data)
 }
 
-rsconnect_bundle_create.AsIs <- function(x, temp_dir, name, board, account_name) {
-  rsconnect_bundle_create.default(x = x,
-                                  temp_dir = temp_dir,
-                                  name = name,
-                                  board = board,
-                                  account_name = account_name)
+rsc_bundle_preview_data <- function(df, n = 100) {
+  if (!is.data.frame(df)) {
+    return(list(data = list(), columns = list()))
+  }
+
+  cols <- lapply(colnames(df), function(col) {
+    list(
+      name = col,
+      label = col,
+      align = if (is.numeric(df[[col]])) "right" else "left",
+      type = ""
+    )
+  })
+
+  rows <- utils::head(df, n = n)
+  rows[] <- lapply(rows, sanitise_col)
+
+  # https://github.com/mlverse/pagedtablejs
+  list(
+    data = rows,
+    columns = cols,
+    options = list(
+      columns = list(max = 10),
+      rows = list(min = 1, total = nrow(rows))
+    )
+  )
 }
 
-rsconnect_bundle_create.default <- function(x, temp_dir, name, board, account_name, retrieve_command = NULL) {
-  html_file <- file.path(temp_dir, "index.html")
+sanitise_col <- function(x) {
+  # Basic classes can be left as is
+  if (is_bare_atomic(x) || is.factor(x) || inherits(x, "Date") || inherits(x, "POSIXt")) {
+    return(x)
+  }
 
-  saveRDS(x, file.path(temp_dir, "data.rds"), version = 2)
+  # Otherwise attempt to convert to a string, making trying to protect against
+  # columns where the format() method doesn't adhere to my expectation
+  fmt <- format(x, digits = 3)
 
-  files <- dir(temp_dir, recursive = TRUE)
-  files <- files[!grepl("index\\.html", files)]
-
-  file.copy(
-    dir(system.file("views/data", package = "pins"), full.names = TRUE),
-    temp_dir,
-    recursive = TRUE)
-  add_user_html(temp_dir)
-
-  rsconnect_bundle_template_html(temp_dir, "files_html", rsconnect_bundle_files_html(files))
-  rsconnect_bundle_template_html(temp_dir, "data_preview", "{\"data\": [], \"columns\": []}")
-  rsconnect_bundle_template_common(temp_dir, "display: none", name, board, account_name, retrieve_command)
-
-  "data.rds"
-}
-
-rsconnect_bundle_create.character <- function(x, temp_dir, name, board, account_name, retrieve_command = NULL) {
-  file.copy(dir(x, full.names = TRUE), temp_dir, recursive = TRUE)
-
-  data_files <- dir(temp_dir, recursive = TRUE)
-
-  html_file <- file.path(temp_dir, "index.html")
-
-  files <- dir(temp_dir, recursive = TRUE)
-  files <- files[!grepl("index\\.html", files)]
-
-  file.copy(
-    dir(system.file("views/data", package = "pins"), full.names = TRUE),
-    temp_dir,
-    recursive = TRUE)
-  add_user_html(temp_dir)
-
-  rsconnect_bundle_template_html(temp_dir, "files_html", rsconnect_bundle_files_html(files))
-  rsconnect_bundle_template_html(temp_dir, "data_preview", "{\"data\": [], \"columns\": []}")
-  rsconnect_bundle_template_common(temp_dir, "display: none", name, board, account_name, retrieve_command)
-
-  data_files
-}
-
-rsconnect_bundle_create <- function(x, temp_dir, name, board, account_name, retrieve_command = NULL, ...) {
-  UseMethod("rsconnect_bundle_create")
-}
-
-rsconnect_bundle_compress <- function(path, manifest) {
-  manifest_json <- jsonlite::toJSON(manifest,
-                                    dataframe = "columns",
-                                    null = "null",
-                                    na = "null",
-                                    auto_unbox = TRUE,
-                                    pretty = TRUE)
-  writeLines(manifest_json, file.path(path, "manifest.json"), useBytes = TRUE)
-
-  prev_path <- setwd(path)
-  on.exit(setwd(prev_path), add = TRUE)
-
-  bundle_path <- tempfile("rsconnect-bundle", fileext = ".tar.gz")
-  suppressWarnings(utils::tar(bundle_path, files = NULL, compression = "gzip", tar = Sys.getenv("RSCONNECT_TAR", "internal")))
-
-  bundle_path
-}
-
-rsconnect_bundle_file_md5 <- function(path) {
-  con <- base::file(path, open = "rb")
-  on.exit(close(con), add = TRUE)
-  unclass(as.character(openssl::md5(con)))
+  if (is.character(fmt) && length(fmt) == NROW(x)) {
+    fmt
+  } else {
+    rep("No preview available", NROW(x))
+  }
 }
