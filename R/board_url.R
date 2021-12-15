@@ -90,6 +90,7 @@ pin_meta.pins_board_url <- function(board, name, version = NULL, ...) {
     )
     meta <- read_meta(cache_dir)
     local_meta(meta,
+      name = name,
       dir = cache_dir,
       url = url,
       file_url = paste0(url, meta$file)
@@ -102,6 +103,7 @@ pin_meta.pins_board_url <- function(board, name, version = NULL, ...) {
       api_version = 1
     )
     local_meta(meta,
+      name = name,
       dir = cache_dir,
       url = url,
       file_url = url
@@ -181,6 +183,7 @@ http_download <- function(url, path_dir, path_file, ...,
     cache$path
   } else if (httr::status_code(req) <= 200) {
     signal("", "pins_cache_downloaded")
+    if (fs::file_exists(path)) fs::file_chmod(path, "u+w")
     fs::file_copy(tmp_path, path, overwrite = TRUE)
     fs::file_chmod(path, "u=r")
 
@@ -227,11 +230,11 @@ has_expired <- function(x) {
   }
 }
 
-http_date <- function(x = Sys.time()) {
+http_date <- function(x = Sys.time(), tz = "UTC") {
   if (is.null(x)) {
     return(NULL)
   }
 
   withr::local_locale(LC_TIME = "C")
-  strftime(.POSIXct(x), "%a, %d %b %Y %H:%M:%S", tz = "UTC", usetz = TRUE)
+  strftime(.POSIXct(x), "%a, %d %b %Y %H:%M:%S", tz = tz, usetz = TRUE)
 }
