@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
     </style>
 
 
+
 <style type="text/css">
   code {
     white-space: pre;
@@ -119,13 +120,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
     try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
+    var j = 0;
+    while (j < rules.length) {
       var rule = rules[j];
       // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -333,13 +341,21 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<p>The pins package helps you publish data sets, models, and other R objects, making it easy to share them across projects and with your colleagues. You can pin objects to a variety of “boards”, including local folders (to share on a networked drive or with dropbox), RStudio connect, Amazon S3, and more. This vignette will introduce you to the basics of pins.</p>
+<p>The pins package helps you publish data sets, models, and other R
+objects, making it easy to share them across projects and with your
+colleagues. You can pin objects to a variety of “boards”, including
+local folders (to share on a networked drive or with dropbox), RStudio
+connect, Amazon S3, and more. This vignette will introduce you to the
+basics of pins.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pins)</span></code></pre></div>
 <div id="getting-started" class="section level2">
 <h2>Getting started</h2>
-<p>Every pin lives in a pin <em>board</em>, so you must start by creating a pin board. In this vignette I’ll use a temporary board which is automatically deleted when your R session is over:</p>
+<p>Every pin lives in a pin <em>board</em>, so you must start by
+creating a pin board. In this vignette I’ll use a temporary board which
+is automatically deleted when your R session is over:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_temp</span>()</span></code></pre></div>
-<p>In real-life, you’d pick a board depending on how you want to share the data. Here are a few options:</p>
+<p>In real-life, you’d pick a board depending on how you want to share
+the data. Here are a few options:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_local</span>() <span class="co"># share data across R sessions on the same computer</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;~/Dropbox&quot;</span>) <span class="co"># share data with others using dropbox</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;Z:</span><span class="sc">\\</span><span class="st">my-team\pins&quot;</span>) <span class="co"># share data using a shared network drive</span></span>
@@ -347,22 +363,45 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="reading-and-writing-data" class="section level2">
 <h2>Reading and writing data</h2>
-<p>Once you have a pin board, you can write data to it with <code>pin_write()</code>:</p>
+<p>Once you have a pin board, you can write data to it with
+<code>pin_write()</code>:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>mtcars <span class="ot">&lt;-</span> tibble<span class="sc">::</span><span class="fu">as_tibble</span>(mtcars)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_write</span>(mtcars, <span class="st">&quot;mtcars&quot;</span>)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Guessing `type = &#39;rds&#39;`</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20120304T050607Z-2f9b5&#39;</span></span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Writing to pin &#39;mtcars&#39;</span></span></code></pre></div>
-<p>The first argument is the object to save (usually a data frame, but it can be any R object), and the second argument gives the “name” of the pin. The name is basically equivalent to a file name: you’ll use it when you later want to read the data from the pin. The only rule for a pin name is that it can’t contain slashes.</p>
-<p>As you can see from the output, pins has chosen to save this data to an <code>.rds</code> file. But you can choose another option depending on your goals:</p>
+<p>The first argument is the object to save (usually a data frame, but
+it can be any R object), and the second argument gives the “name” of the
+pin. The name is basically equivalent to a file name: you’ll use it when
+you later want to read the data from the pin. The only rule for a pin
+name is that it can’t contain slashes.</p>
+<p>As you can see from the output, pins has chosen to save this data to
+an <code>.rds</code> file. But you can choose another option depending
+on your goals:</p>
 <ul>
-<li><code>type = &quot;rds&quot;</code> uses <code>writeRDS()</code> to create a binary R data file. It can save any R object but it’s only readable from R, not other languages.</li>
-<li><code>type = &quot;csv&quot;</code> uses <code>write.csv()</code> to create a <code>.csv</code> file. CSVs can read by any application, but only support simple columns (e.g. numbers, strings, dates), can take up a lot of disk space, and can be slow to read.</li>
-<li><code>type = &quot;arrow&quot;</code> uses <code>arrow::write_feather()</code> to create an arrow/feather file. <a href="https://arrow.apache.org">Arrow</a> is a modern, language-independent, high-performance file format designed for data science. Not every tool can read arrow files, but support is growing rapidly.</li>
-<li><code>type = &quot;json&quot;</code> uses <code>jsonlite::write_json()</code> to create a <code>.json</code> file. Pretty much every programming language can read json files, but they only work well for nested lists.</li>
-<li><code>type = &quot;qs&quot;</code> uses <code>qs::qsave()</code> to create a binary R data file, like <code>writeRDS()</code>. This format achieves faster read/write speeds than RDS, and compresses data more efficiently, making it a good choice for larger objects. Read more on the <a href="https://github.com/traversc/qs">qs package</a>.</li>
+<li><code>type = &quot;rds&quot;</code> uses <code>writeRDS()</code> to create a
+binary R data file. It can save any R object but it’s only readable from
+R, not other languages.</li>
+<li><code>type = &quot;csv&quot;</code> uses <code>write.csv()</code> to create a
+<code>.csv</code> file. CSVs can read by any application, but only
+support simple columns (e.g. numbers, strings, dates), can take up a lot
+of disk space, and can be slow to read.</li>
+<li><code>type = &quot;arrow&quot;</code> uses <code>arrow::write_feather()</code>
+to create an arrow/feather file. <a href="https://arrow.apache.org">Arrow</a> is a modern,
+language-independent, high-performance file format designed for data
+science. Not every tool can read arrow files, but support is growing
+rapidly.</li>
+<li><code>type = &quot;json&quot;</code> uses <code>jsonlite::write_json()</code>
+to create a <code>.json</code> file. Pretty much every programming
+language can read json files, but they only work well for nested
+lists.</li>
+<li><code>type = &quot;qs&quot;</code> uses <code>qs::qsave()</code> to create a
+binary R data file, like <code>writeRDS()</code>. This format achieves
+faster read/write speeds than RDS, and compresses data more efficiently,
+making it a good choice for larger objects. Read more on the <a href="https://github.com/traversc/qs">qs package</a>.</li>
 </ul>
-<p>After you’ve pinned an object, you can read it back with <code>pin_read()</code>:</p>
+<p>After you’ve pinned an object, you can read it back with
+<code>pin_read()</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_read</span>(<span class="st">&quot;mtcars&quot;</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 32 × 11</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb</span></span>
@@ -378,12 +417,21 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9  22.8     4  141.    95  3.92  3.15  22.9     1     0     4     2</span></span>
 <span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10  19.2     6  168.   123  3.92  3.44  18.3     1     0     4     4</span></span>
 <span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # … with 22 more rows</span></span></code></pre></div>
-<p>You don’t need to supply the file type when reading data from a pin because pins automatically stores the file type in the metadata, the topic of the next section.</p>
-<p>Note that when the data lives elsewhere, pins takes care of downloading and caching so that it’s only re-downloaded when needed. That said, most boards transmit pins over HTTP, and this is going to be slow and possibly unreliable for very large pins. As a general rule of thumb, we don’t recommend using pins with files over 500 MB. If you find yourself routinely pinning data larger that this, you might need to reconsider your data engineering pipeline.</p>
+<p>You don’t need to supply the file type when reading data from a pin
+because pins automatically stores the file type in the metadata, the
+topic of the next section.</p>
+<p>Note that when the data lives elsewhere, pins takes care of
+downloading and caching so that it’s only re-downloaded when needed.
+That said, most boards transmit pins over HTTP, and this is going to be
+slow and possibly unreliable for very large pins. As a general rule of
+thumb, we don’t recommend using pins with files over 500 MB. If you find
+yourself routinely pinning data larger that this, you might need to
+reconsider your data engineering pipeline.</p>
 </div>
 <div id="metadata" class="section level2">
 <h2>Metadata</h2>
-<p>Every pin is accompanied by some metadata that you can access with <code>pin_meta()</code>:</p>
+<p>Every pin is accompanied by some metadata that you can access with
+<code>pin_meta()</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_meta</span>(<span class="st">&quot;mtcars&quot;</span>)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; List of 11</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ file       : chr &quot;mtcars.rds&quot;</span></span>
@@ -392,23 +440,30 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ type       : chr &quot;rds&quot;</span></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ title      : chr &quot;mtcars: a pinned 32 x 11 data frame&quot;</span></span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ description: NULL</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ created    : POSIXct[1:1], format: &quot;2021-12-14 12:45:00&quot;</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ created    : POSIXct[1:1], format: &quot;2022-08-22 15:05:00&quot;</span></span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ api_version: num 1</span></span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ user       : list()</span></span>
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ name       : chr &quot;mtcars&quot;</span></span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ local      :List of 3</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..$ dir    : &#39;fs_path&#39; chr &quot;/tmp/Rtmph4DofV/pins-64474bfd2bd6/mtcars/20120304T050607Z-2f9b5&quot;</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..$ dir    : &#39;fs_path&#39; chr &quot;/var/folders/hv/hzsmmyk9393_m7q3nscx1slc0000gn/T/RtmpzUqxKB/pins-4a576740c8c0/mtcars/20120304T050607Z-2f9b5&quot;</span></span>
 <span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..$ url    : NULL</span></span>
 <span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..$ version: chr &quot;20120304T050607Z-2f9b5&quot;</span></span></code></pre></div>
-<p>This shows you the metadata that’s generated by default. This includes:</p>
+<p>This shows you the metadata that’s generated by default. This
+includes:</p>
 <ul>
-<li><p><code>title</code>, a brief textual description of the dataset.</p></li>
-<li><p>an optional <code>description</code>, where you can provide more details.</p></li>
+<li><p><code>title</code>, a brief textual description of the
+dataset.</p></li>
+<li><p>an optional <code>description</code>, where you can provide more
+details.</p></li>
 <li><p>the date-time when the pin was <code>created</code>.</p></li>
-<li><p>the <code>file_size</code>, in bytes, of the underlying files.</p></li>
-<li><p>a unique <code>pin_hash</code> that you can supply to <code>pin_read()</code> to ensure that you’re reading exactly the data that you expect.</p></li>
+<li><p>the <code>file_size</code>, in bytes, of the underlying
+files.</p></li>
+<li><p>a unique <code>pin_hash</code> that you can supply to
+<code>pin_read()</code> to ensure that you’re reading exactly the data
+that you expect.</p></li>
 </ul>
-<p>When creating the pin, you can override the default description or provide additional metadata that is stored with the data:</p>
+<p>When creating the pin, you can override the default description or
+provide additional metadata that is stored with the data:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_write</span>(mtcars, </span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">description =</span> <span class="st">&quot;Data extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models).&quot;</span>,</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">metadata =</span> <span class="fu">list</span>(</span>
@@ -427,29 +482,38 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ type       : chr &quot;rds&quot;</span></span>
 <span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ title      : chr &quot;mtcars: a pinned 32 x 11 data frame&quot;</span></span>
 <span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ description: chr &quot;Data extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobi&quot;| __truncated__</span></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ created    : POSIXct[1:1], format: &quot;2021-12-14 12:45:00&quot;</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ created    : POSIXct[1:1], format: &quot;2022-08-22 15:05:00&quot;</span></span>
 <span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ api_version: num 1</span></span>
 <span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ user       :List of 1</span></span>
 <span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..$ source: chr &quot;Henderson and Velleman (1981), Building multiple regression models interactively. Biometrics, 37, 391–411.&quot;</span></span>
 <span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ name       : chr &quot;mtcars&quot;</span></span>
 <span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ local      :List of 3</span></span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..$ dir    : &#39;fs_path&#39; chr &quot;/tmp/Rtmph4DofV/pins-64474bfd2bd6/mtcars/20120304T050607Z-2f9b5&quot;</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..$ dir    : &#39;fs_path&#39; chr &quot;/var/folders/hv/hzsmmyk9393_m7q3nscx1slc0000gn/T/RtmpzUqxKB/pins-4a576740c8c0/mtcars/20120304T050607Z-2f9b5&quot;</span></span>
 <span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..$ url    : NULL</span></span>
 <span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..$ version: chr &quot;20120304T050607Z-2f9b5&quot;</span></span></code></pre></div>
-<p>While we’ll do our best to keep the automatically generated metadata consistent over time, I’d recommend manually capturing anything you really care about in <code>metadata</code>.</p>
+<p>While we’ll do our best to keep the automatically generated metadata
+consistent over time, I’d recommend manually capturing anything you
+really care about in <code>metadata</code>.</p>
 </div>
 <div id="versioning" class="section level2">
 <h2>Versioning</h2>
-<p>In many situations it’s useful to version pins, so that writing to an existing pin does not replace the existing data, but instead adds a new copy. There are two ways to turn versioning on:</p>
+<p>In many situations it’s useful to version pins, so that writing to an
+existing pin does not replace the existing data, but instead adds a new
+copy. There are two ways to turn versioning on:</p>
 <ul>
-<li><p>When you create a board you can turn versioning on for every pin in that board:</p>
+<li><p>When you create a board you can turn versioning on for every pin
+in that board:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>board2 <span class="ot">&lt;-</span> <span class="fu">board_temp</span>(<span class="at">versioned =</span> <span class="cn">TRUE</span>)</span></code></pre></div></li>
-<li><p>When you write a pin, you can specifically request that versioning be turned on for that pin:</p>
+<li><p>When you write a pin, you can specifically request that
+versioning be turned on for that pin:</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>board2 <span class="ot">&lt;-</span> <span class="fu">board_temp</span>()</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>board2 <span class="sc">%&gt;%</span> <span class="fu">pin_write</span>(mtcars, <span class="at">versioned =</span> <span class="cn">TRUE</span>)</span></code></pre></div></li>
 </ul>
-<p>Most boards have versioning on by default. The primary exception is <code>board_folder()</code> since that stores data on your computer, and there’s no automated way to clean up the data your saving.</p>
-<p>Once you have turned versioning on, every <code>pin_write()</code> will create a new version:</p>
+<p>Most boards have versioning on by default. The primary exception is
+<code>board_folder()</code> since that stores data on your computer, and
+there’s no automated way to clean up the data your saving.</p>
+<p>Once you have turned versioning on, every <code>pin_write()</code>
+will create a new version:</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>board2 <span class="ot">&lt;-</span> <span class="fu">board_temp</span>(<span class="at">versioned =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>board2 <span class="sc">%&gt;%</span> <span class="fu">pin_write</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">name =</span> <span class="st">&quot;x&quot;</span>, <span class="at">type =</span> <span class="st">&quot;rds&quot;</span>)</span>
@@ -461,25 +525,35 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>board2 <span class="sc">%&gt;%</span> <span class="fu">pin_write</span>(<span class="dv">3</span><span class="sc">:</span><span class="dv">7</span>, <span class="at">name =</span> <span class="st">&quot;x&quot;</span>, <span class="at">type =</span> <span class="st">&quot;rds&quot;</span>)</span>
 <span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20120304T050607Z-0a284&#39;</span></span>
 <span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Writing to pin &#39;x&#39;</span></span></code></pre></div>
-<p>You can list all the available versions with <code>pin_versions()</code>:</p>
+<p>You can list all the available versions with
+<code>pin_versions()</code>:</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>board2 <span class="sc">%&gt;%</span> <span class="fu">pin_versions</span>(<span class="st">&quot;x&quot;</span>)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 3 × 3</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   version                created             hash </span></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;                  &lt;dttm&gt;              &lt;chr&gt;</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 20120304T050607Z-0a284 2012-03-03 23:06:00 0a284</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 20120304T050607Z-a077a 2012-03-03 23:06:00 a077a</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 20120304T050607Z-ab444 2012-03-03 23:06:00 ab444</span></span></code></pre></div>
-<p>(Pins does not currently provide any tool to remove old versions, but this is likely to be implemented in the future.)</p>
-<p>By default, <code>pin_read()</code> will return the most recent version:</p>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 20120304T050607Z-0a284 2012-03-03 22:06:00 0a284</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 20120304T050607Z-a077a 2012-03-03 22:06:00 a077a</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 20120304T050607Z-ab444 2012-03-03 22:06:00 ab444</span></span></code></pre></div>
+<p>(Pins does not currently provide any tool to remove old versions, but
+this is likely to be implemented in the future.)</p>
+<p>By default, <code>pin_read()</code> will return the most recent
+version:</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>board2 <span class="sc">%&gt;%</span> <span class="fu">pin_read</span>(<span class="st">&quot;x&quot;</span>)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 1 2 3 4 5</span></span></code></pre></div>
-<p>But you can request an older version by supplying the <code>version</code> argument:</p>
+<p>But you can request an older version by supplying the
+<code>version</code> argument:</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>board2 <span class="sc">%&gt;%</span> <span class="fu">pin_read</span>(<span class="st">&quot;x&quot;</span>, <span class="at">version =</span> <span class="st">&quot;20210520T173110Z-49519&quot;</span>)</span></code></pre></div>
 </div>
 <div id="reading-and-writing-files" class="section level2">
 <h2>Reading and writing files</h2>
-<p>So far we’ve focussed on <code>pin_write()</code> and <code>pin_read()</code> which work with R objects. pins also provides the lower-level <code>pin_upload()</code> and <code>pin_download()</code> which work with files on disk. You can use them to share types of data that are otherwise unsupported by pins.</p>
-<p><code>pin_upload()</code> works like <code>pin_write()</code> but instead of an R object you give it a vector of paths. I’ll start by creating a few files in the temp directory:</p>
+<p>So far we’ve focussed on <code>pin_write()</code> and
+<code>pin_read()</code> which work with R objects. pins also provides
+the lower-level <code>pin_upload()</code> and
+<code>pin_download()</code> which work with files on disk. You can use
+them to share types of data that are otherwise unsupported by pins.</p>
+<p><code>pin_upload()</code> works like <code>pin_write()</code> but
+instead of an R object you give it a vector of paths. I’ll start by
+creating a few files in the temp directory:</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>paths <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="fu">tempdir</span>(), <span class="fu">c</span>(<span class="st">&quot;mtcars.csv&quot;</span>, <span class="st">&quot;alphabet.txt&quot;</span>))</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(mtcars, paths[[<span class="dv">1</span>]])</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">writeLines</span>(letters, paths[[<span class="dv">2</span>]])</span></code></pre></div>
@@ -488,52 +562,73 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20120304T050607Z-e9d42&#39;</span></span></code></pre></div>
 <p><code>pin_download()</code> returns a vector of paths:</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_download</span>(<span class="st">&quot;example&quot;</span>)</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/tmp/Rtmph4DofV/pins-64474bfd2bd6/example/20120304T050607Z-e9d42/mtcars.csv&quot;  </span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [2] &quot;/tmp/Rtmph4DofV/pins-64474bfd2bd6/example/20120304T050607Z-e9d42/alphabet.txt&quot;</span></span></code></pre></div>
-<p>It’s now your job to handle them. You should treat these paths as internal implementation details — never modify them and never save them for use outside of pins.</p>
-<p>Note that you can’t <code>pin_read()</code> something you pinned with <code>pin_upload()</code>:</p>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/var/folders/hv/hzsmmyk9393_m7q3nscx1slc0000gn/T/RtmpzUqxKB/pins-4a576740c8c0/example/20120304T050607Z-e9d42/mtcars.csv&quot;  </span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [2] &quot;/var/folders/hv/hzsmmyk9393_m7q3nscx1slc0000gn/T/RtmpzUqxKB/pins-4a576740c8c0/example/20120304T050607Z-e9d42/alphabet.txt&quot;</span></span></code></pre></div>
+<p>It’s now your job to handle them. You should treat these paths as
+internal implementation details — never modify them and never save them
+for use outside of pins.</p>
+<p>Note that you can’t <code>pin_read()</code> something you pinned with
+<code>pin_upload()</code>:</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_read</span>(<span class="st">&quot;example&quot;</span>)</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Error: Pin does not declare file type so can&#39;t be automatically read</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ Retrieve uploaded paths with `pin_download()`</span></span></code></pre></div>
-<p>But you can <code>pin_download()</code> something that you’ve pinned with <code>pin_write()</code>:</p>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Error in `object_read()`:</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ! Pin does not declare file type so can&#39;t be automatically read</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ Retrieve uploaded paths with `pin_download()`</span></span></code></pre></div>
+<p>But you can <code>pin_download()</code> something that you’ve pinned
+with <code>pin_write()</code>:</p>
 <div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_download</span>(<span class="st">&quot;mtcars&quot;</span>)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/tmp/Rtmph4DofV/pins-64474bfd2bd6/mtcars/20120304T050607Z-2f9b5/mtcars.rds&quot;</span></span></code></pre></div>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/var/folders/hv/hzsmmyk9393_m7q3nscx1slc0000gn/T/RtmpzUqxKB/pins-4a576740c8c0/mtcars/20120304T050607Z-2f9b5/mtcars.rds&quot;</span></span></code></pre></div>
 </div>
 <div id="caching" class="section level2">
 <h2>Caching</h2>
-<p>The primary purpose of pins is to make it easy to share data. But pins is also designed to help you spend as little time as possible downloading data. <code>pin_read()</code> and <code>pin_download()</code> automatically cache remote pins: they maintain a local copy of the data (so it’s fast) but always check that it’s up-to-date (so your analysis doesn’t use stale data).</p>
-<p>Wouldn’t it be nice if you could take advantage of this feature for any dataset on the internet? That’s the idea behind <code>board_url()</code> — you can assemble your own board from datasets, wherever they live on the internet. For example, this code creates a board containing a single pin, <code>penguins</code>, that refers to some fun data I found on GitHub:</p>
+<p>The primary purpose of pins is to make it easy to share data. But
+pins is also designed to help you spend as little time as possible
+downloading data. <code>pin_read()</code> and
+<code>pin_download()</code> automatically cache remote pins: they
+maintain a local copy of the data (so it’s fast) but always check that
+it’s up-to-date (so your analysis doesn’t use stale data).</p>
+<p>Wouldn’t it be nice if you could take advantage of this feature for
+any dataset on the internet? That’s the idea behind
+<code>board_url()</code> — you can assemble your own board from
+datasets, wherever they live on the internet. For example, this code
+creates a board containing a single pin, <code>penguins</code>, that
+refers to some fun data I found on GitHub:</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>my_data <span class="ot">&lt;-</span> <span class="fu">board_url</span>(<span class="fu">c</span>(</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;penguins&quot;</span> <span class="ot">=</span> <span class="st">&quot;https://raw.githubusercontent.com/allisonhorst/palmerpenguins/master/inst/extdata/penguins_raw.csv&quot;</span></span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>))</span></code></pre></div>
-<p>You can read this data by combining <code>pin_download()</code> with <code>read.csv()</code><a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>:</p>
+<p>You can read this data by combining <code>pin_download()</code> with
+<code>read.csv()</code><a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>:</p>
 <div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>my_data <span class="sc">%&gt;%</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pin_download</span>(<span class="st">&quot;penguins&quot;</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read.csv</span>(<span class="at">check.names =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">as_tibble</span>()</span>
 <span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 344 × 17</span></span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    studyName `Sample Number` Species       Region Island Stage   `Individual ID`</span></span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;               &lt;int&gt; &lt;chr&gt;         &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;          </span></span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1 PAL0708                 1 Adelie Pengu… Anvers Torge… Adult,… N1A1           </span></span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2 PAL0708                 2 Adelie Pengu… Anvers Torge… Adult,… N1A2           </span></span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3 PAL0708                 3 Adelie Pengu… Anvers Torge… Adult,… N2A1           </span></span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4 PAL0708                 4 Adelie Pengu… Anvers Torge… Adult,… N2A2           </span></span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5 PAL0708                 5 Adelie Pengu… Anvers Torge… Adult,… N3A1           </span></span>
-<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6 PAL0708                 6 Adelie Pengu… Anvers Torge… Adult,… N3A2           </span></span>
-<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7 PAL0708                 7 Adelie Pengu… Anvers Torge… Adult,… N4A1           </span></span>
-<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8 PAL0708                 8 Adelie Pengu… Anvers Torge… Adult,… N4A2           </span></span>
-<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9 PAL0708                 9 Adelie Pengu… Anvers Torge… Adult,… N5A1           </span></span>
-<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10 PAL0708                10 Adelie Pengu… Anvers Torge… Adult,… N5A2           </span></span>
-<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # … with 334 more rows, and 10 more variables: Clutch Completion &lt;chr&gt;,</span></span>
-<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   Date Egg &lt;chr&gt;, Culmen Length (mm) &lt;dbl&gt;, Culmen Depth (mm) &lt;dbl&gt;,</span></span>
-<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   Flipper Length (mm) &lt;int&gt;, Body Mass (g) &lt;int&gt;, Sex &lt;chr&gt;,</span></span>
-<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   Delta 15 N (o/oo) &lt;dbl&gt;, Delta 13 C (o/oo) &lt;dbl&gt;, Comments &lt;chr&gt;</span></span></code></pre></div>
-<p><code>board_url()</code> requires a bit of work compared to using <code>download.file()</code> or similar but it has a big payoff: the data will only be re-downloaded when it changes.</p>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    studyName Sampl…¹ Species Region Island Stage Indiv…² Clutc…³ Date …⁴ Culme…⁵</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;       &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt;</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1 PAL0708         1 Adelie… Anvers Torge… Adul… N1A1    Yes     2007-1…    39.1</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2 PAL0708         2 Adelie… Anvers Torge… Adul… N1A2    Yes     2007-1…    39.5</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3 PAL0708         3 Adelie… Anvers Torge… Adul… N2A1    Yes     2007-1…    40.3</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4 PAL0708         4 Adelie… Anvers Torge… Adul… N2A2    Yes     2007-1…    NA  </span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5 PAL0708         5 Adelie… Anvers Torge… Adul… N3A1    Yes     2007-1…    36.7</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6 PAL0708         6 Adelie… Anvers Torge… Adul… N3A2    Yes     2007-1…    39.3</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7 PAL0708         7 Adelie… Anvers Torge… Adul… N4A1    No      2007-1…    38.9</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8 PAL0708         8 Adelie… Anvers Torge… Adul… N4A2    No      2007-1…    39.2</span></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9 PAL0708         9 Adelie… Anvers Torge… Adul… N5A1    Yes     2007-1…    34.1</span></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10 PAL0708        10 Adelie… Anvers Torge… Adul… N5A2    Yes     2007-1…    42  </span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # … with 334 more rows, 7 more variables: `Culmen Depth (mm)` &lt;dbl&gt;,</span></span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   `Flipper Length (mm)` &lt;int&gt;, `Body Mass (g)` &lt;int&gt;, Sex &lt;chr&gt;,</span></span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   `Delta 15 N (o/oo)` &lt;dbl&gt;, `Delta 13 C (o/oo)` &lt;dbl&gt;, Comments &lt;chr&gt;, and</span></span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   abbreviated variable names ¹​`Sample Number`, ²​`Individual ID`,</span></span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   ³​`Clutch Completion`, ⁴​`Date Egg`, ⁵​`Culmen Length (mm)`</span></span></code></pre></div>
+<p><code>board_url()</code> requires a bit of work compared to using
+<code>download.file()</code> or similar but it has a big payoff: the
+data will only be re-downloaded when it changes.</p>
 </div>
 <div class="footnotes footnotes-end-of-document">
 <hr />
 <ol>
-<li id="fn1"><p>Here I’m using <code>read.csv()</code> to the reduce the dependencies of the pins package. For real code I’d recommend using <code>data.table::fread()</code> or <code>readr::read_csv().</code><a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn1"><p>Here I’m using <code>read.csv()</code> to the reduce the
+dependencies of the pins package. For real code I’d recommend using
+<code>data.table::fread()</code> or <code>readr::read_csv().</code><a href="#fnref1" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
 
