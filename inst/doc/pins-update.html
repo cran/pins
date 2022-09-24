@@ -12,7 +12,7 @@
 
 
 
-<title>Updating to pins 1.0.0</title>
+<title>Upgrading to pins 1.0.0</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -337,7 +337,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Updating to pins 1.0.0</h1>
+<h1 class="title toc-ignore">Upgrading to pins 1.0.0</h1>
 
 
 
@@ -375,7 +375,7 @@ of <code>pin_get()</code> and <code>pin()</code>.</li>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">pin_write</span>(board, <span class="fu">head</span>(mtcars), <span class="st">&quot;mtcars&quot;</span>)</span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Guessing `type = &#39;rds&#39;`</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Replacing version &#39;20220822T205938Z-209d4&#39; with &#39;20220822T210529Z-209d4&#39;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Replacing version &#39;20220923T183543Z-209d4&#39; with &#39;20220923T212755Z-209d4&#39;</span></span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Writing to pin &#39;mtcars&#39;</span></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">pin_read</span>(board, <span class="st">&quot;mtcars&quot;</span>)</span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                    mpg cyl disp  hp drat    wt  qsec vs am gear carb</span></span>
@@ -392,7 +392,7 @@ want to use the pipe:</p>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_write</span>(<span class="fu">head</span>(mtcars), <span class="st">&quot;mtcars&quot;</span>)</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Guessing `type = &#39;rds&#39;`</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Replacing version &#39;20220822T210529Z-209d4&#39; with &#39;20220822T210529Z-209d4&#39;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Replacing version &#39;20220923T212755Z-209d4&#39; with &#39;20220923T212755Z-209d4&#39;</span></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Writing to pin &#39;mtcars&#39;</span></span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_read</span>(<span class="st">&quot;mtcars&quot;</span>)</span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                    mpg cyl disp  hp drat    wt  qsec vs am gear carb</span></span>
@@ -411,16 +411,16 @@ want to use the pipe:</p>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">pin</span>(path, <span class="st">&quot;alphabet&quot;</span>, <span class="at">board =</span> <span class="st">&quot;vignette&quot;</span>)</span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">pin_get</span>(<span class="st">&quot;alphabet&quot;</span>, <span class="at">board =</span> <span class="st">&quot;vignette&quot;</span>)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/var/folders/hv/hzsmmyk9393_m7q3nscx1slc0000gn/T/RtmpzUqxKB/file4a572be32502/alphabet/file4a5756a0a751&quot;</span></span></code></pre></div>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/var/folders/hv/hzsmmyk9393_m7q3nscx1slc0000gn/T/RtmpJAEAis/filefddb274d5e4/alphabet/filefddb5d4cf296&quot;</span></span></code></pre></div>
 <p>pins 1.0.0 clearly separates the two cases of pin an object and
 pinning a file, so here instead of <code>pin_write()</code> and
 <code>pin_read()</code> you need to <code>pin_upload()</code> and
 <code>pin_download()</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Modern API</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_upload</span>(path, <span class="st">&quot;alphabet&quot;</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Replacing version &#39;20220822T205938Z-ee580&#39; with &#39;20220822T210529Z-ee580&#39;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Replacing version &#39;20220923T183543Z-ee580&#39; with &#39;20220923T212755Z-ee580&#39;</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_download</span>(<span class="st">&quot;alphabet&quot;</span>)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;~/Library/Application Support/pins/alphabet/20220822T210529Z-ee580/file4a5756a0a751&quot;</span></span></code></pre></div>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;~/Library/Application Support/pins/alphabet/20220923T212755Z-ee580/filefddb5d4cf296&quot;</span></span></code></pre></div>
 </div>
 <div id="pinning-a-url" class="section level3">
 <h3>Pinning a url</h3>
@@ -430,7 +430,7 @@ re-download it when it changes:</p>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>base <span class="ot">&lt;-</span> <span class="st">&quot;https://raw.githubusercontent.com/rstudio/pins-r/master/tests/testthat/&quot;</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>(<span class="fu">pin</span>(<span class="fu">paste0</span>(base, <span class="st">&quot;pin-files/first.txt&quot;</span>), <span class="at">board =</span> <span class="st">&quot;vignette&quot;</span>))</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/var/folders/hv/hzsmmyk9393_m7q3nscx1slc0000gn/T/RtmpzUqxKB/file4a572be32502/first/first.txt&quot;</span></span></code></pre></div>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/var/folders/hv/hzsmmyk9393_m7q3nscx1slc0000gn/T/RtmpJAEAis/filefddb274d5e4/first/first.txt&quot;</span></span></code></pre></div>
 <p>This now needs to be made explicit with the new
 <code>board_url()</code>, and since this returns a path, not a file, you
 need to use <code>pin_download()</code>:</p>
@@ -460,7 +460,7 @@ it automatically uses a local board:</p>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_write</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>), <span class="st">&quot;test-data&quot;</span>)</span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Guessing `type = &#39;rds&#39;`</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Replacing version &#39;20220822T205938Z-03a9b&#39; with &#39;20220822T210529Z-03a9b&#39;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Replacing version &#39;20220923T183543Z-03a9b&#39; with &#39;20220923T212755Z-03a9b&#39;</span></span>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Writing to pin &#39;test-data&#39;</span></span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_read</span>(<span class="st">&quot;test-data&quot;</span>)</span>
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   x</span></span>

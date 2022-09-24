@@ -1,3 +1,16 @@
+# pins 1.0.3
+
+* The `arrow` package is now suggested, rather than imported (#644, @jonthegeek).
+
+* Fixed how Connect usernames are handled in messages, preview, etc (#643).
+
+* Increased datetime precision to the second, for `pin_versions()` and related
+  functions (#642, @tomsing1).
+  
+* Pass the dots from `pin_write()` through to `s3_upload_file()` and 
+  `s3_uploade_yaml()` to support S3 tagging, encryption options, etc for 
+  pins (#648, #652, @fh-mthomson).  
+
 # pins 1.0.2
 
 * `board_rsconnect()` now correctly finds the created date for pins (#623, 
@@ -7,7 +20,7 @@
 
 * The `pin_reactive_*()` functions now use the hash (rather than the created 
   date) for polling (#595, @thomaszwagerman).
-
+  
 # pins 1.0.1
 
 * `board_azure()` now allows you to set a `path` so that multiple boards can
@@ -105,7 +118,7 @@ This version includes the following modern boards:
   [paws](https://paws-r.github.io).
 
 * `board_url()` lets you create a manual board from a vector of URLs. This is 
-  useful because `pin_donwload()` and `pin_read()` are cached, so they only 
+  useful because `pin_download()` and `pin_read()` are cached, so they only 
   re-download the data if it has changed since the last time you used it (#409). 
   This board is a replacement for `pin()`'s ability to work directly with URLs
 
