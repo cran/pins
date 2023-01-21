@@ -111,6 +111,10 @@ test_api_basic <- function(board) {
     )
   })
 
+  testthat::test_that("can find board required pkgs", {
+    testthat::expect_snapshot(required_pkgs(board))
+  })
+
 }
 
 test_api_versioning <- function(board) {
@@ -171,6 +175,23 @@ test_api_versioning <- function(board) {
 
 }
 
+test_api_manifest <- function(board) {
+  # assume that test_api_basic() has passed
+  name1 <- local_pin(board, 1:10, type = "csv")
+  name2 <- local_pin(board, 11:20, type = "json")
+  write_board_manifest(board)
+
+  testthat::test_that("manifest is not a pin", {
+    testthat::expect_false(pin_exists(board, manifest_pin_yaml_filename))
+    testthat::expect_false(manifest_pin_yaml_filename %in% pin_list(board))
+    testthat::expect_error(
+      pin_meta(board, manifest_pin_yaml_filename),
+      class = "pins_pin_missing"
+    )
+  })
+
+}
+
 # errors live here for now since they're closely bound to the tests
 
 abort_pin_missing <- function(name) {
@@ -193,4 +214,9 @@ abort_pin_versioned <- function() {
 
 abort_board_read_only <- function(board) {
   abort(glue("{board}() is read only"), class = "pins_board_read_only")
+}
+
+abort_board_not_versioned <- function(board) {
+  cli::cli_abort(glue("This {board}() is not versioned"),
+                 class = "pins_board_not_versioned")
 }

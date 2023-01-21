@@ -7,7 +7,7 @@
 #' disk, controlled by the `type` argument. See [pin_download()]/[pin_upload()]
 #' if you want to perform the serialisation yourself and work just with files.
 #'
-#' @param board A pin board, created by [board_folder()], [board_rsconnect()],
+#' @param board A pin board, created by [board_folder()], [board_connect()],
 #'   [board_url()] or another `board_` function.
 #' @param name Pin name.
 #' @param version Retrieve a specific version of a pin. Use [pin_versions()] to
@@ -56,10 +56,14 @@ pin_read <- function(board, name, version = NULL, hash = NULL, ...) {
 #'   When retrieving the pin, this will be stored in the `user` key, to
 #'   avoid potential clashes with the metadata that pins itself uses.
 #' @param type File type used to save `x` to disk. Must be one of
-#'   "csv", "rds", "json", "arrow", or "qs". If not supplied will use json for bare
-#'   lists and rds for everything else.
+#'   "csv", "json", "rds", "arrow", or "qs". If not supplied, will use JSON for
+#'   bare lists and RDS for everything else. Be aware that CSV and JSON are
+#'   plain text formats, while RDS, Arrow, and
+#'   [qs](https://CRAN.R-project.org/package=qs) are binary formats.
 #' @param versioned Should the pin be versioned? The default, `NULL`, will
 #'   use the default for `board`
+#' @param tags A character vector of tags for the pin; most important for
+#'   discoverability on shared boards.
 #' @rdname pin_read
 #' @export
 pin_write <- function(board, x,
@@ -69,6 +73,7 @@ pin_write <- function(board, x,
                       description = NULL,
                       metadata = NULL,
                       versioned = NULL,
+                      tags = NULL,
                       ...) {
   ellipsis::check_dots_used()
   check_board(board, "pin_write()", "pin()")
@@ -83,6 +88,7 @@ pin_write <- function(board, x,
     }
   }
   check_metadata(metadata)
+  check_tags(tags)
   if (!is_string(name)) {
     abort("`name` must be a string")
   }
@@ -100,7 +106,8 @@ pin_write <- function(board, x,
     paths = path,
     type = type,
     title = title %||% default_title(name, data = x),
-    description = description
+    description = description,
+    tags = tags
   )
   meta$user <- metadata
 
@@ -128,6 +135,7 @@ object_write <- function(x, path, type = "rds") {
     json = jsonlite::write_json(x, path, auto_unbox = TRUE),
     arrow = write_arrow(x, path),
     pickle = abort("'pickle' pins not supported in R"),
+    joblib = abort("'joblib' pins not supported in R"),
     csv = utils::write.csv(x, path, row.names = FALSE),
     qs = write_qs(x, path)
   )
@@ -183,7 +191,8 @@ object_read <- function(meta) {
       json = jsonlite::read_json(path, simplifyVector = TRUE),
       arrow = read_arrow(path),
       pickle = abort("'pickle' pins not supported in R"),
-      csv = utils::read.csv(path, stringsAsFactors = TRUE),
+      joblib = abort("'joblib' pins not supported in R"),
+      csv = utils::read.csv(path),
       qs = read_qs(path),
       file = abort(c(
         "Pin does not declare file type so can't be automatically read",
@@ -191,7 +200,7 @@ object_read <- function(meta) {
       ))
     )
   } else {
-    # used by board_rsconnect()
+    # used by board_connect()
     type <- arg_match0(meta$type, c("default", "files", "table"))
     path <- fs::path_dir(path[[1]])
 
@@ -246,7 +255,12 @@ check_name <- function(x) {
 }
 check_metadata <- function(x) {
   if (!is.null(x) && !is_bare_list(x)) {
-    abort("`metadata` must be a list")
+    abort("`metadata` must be a list.")
+  }
+}
+check_tags <- function(x) {
+  if (!is.null(x) && !is_character(x)) {
+    abort("`tags` must be a character vector.")
   }
 }
 check_hash <- function(meta, hash) {

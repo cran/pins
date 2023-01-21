@@ -16,11 +16,12 @@ pin_write(
   description = NULL,
   metadata = NULL,
   versioned = NULL,
+  tags = NULL,
   ...
 )
 }
 \arguments{
-\item{board}{A pin board, created by \code{\link[=board_folder]{board_folder()}}, \code{\link[=board_rsconnect]{board_rsconnect()}},
+\item{board}{A pin board, created by \code{\link[=board_folder]{board_folder()}}, \code{\link[=board_connect]{board_connect()}},
 \code{\link[=board_url]{board_url()}} or another \code{board_} function.}
 
 \item{name}{Pin name.}
@@ -37,8 +38,10 @@ you expect. You can find the hash of an existing pin by looking for
 \item{x}{An object (typically a data frame) to pin.}
 
 \item{type}{File type used to save \code{x} to disk. Must be one of
-"csv", "rds", "json", "arrow", or "qs". If not supplied will use json for bare
-lists and rds for everything else.}
+"csv", "json", "rds", "arrow", or "qs". If not supplied, will use JSON for
+bare lists and RDS for everything else. Be aware that CSV and JSON are
+plain text formats, while RDS, Arrow, and
+\href{https://CRAN.R-project.org/package=qs}{qs} are binary formats.}
 
 \item{title}{A title for the pin; most important for shared boards so that
 others can understand what the pin contains. If omitted, a brief
@@ -52,6 +55,9 @@ avoid potential clashes with the metadata that pins itself uses.}
 
 \item{versioned}{Should the pin be versioned? The default, \code{NULL}, will
 use the default for \code{board}}
+
+\item{tags}{A character vector of tags for the pin; most important for
+discoverability on shared boards.}
 }
 \value{
 \code{pin_read()} returns an R object read from the pin;

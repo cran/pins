@@ -18,7 +18,7 @@ board <- board_temp()
 #  board <- board_local() # share data across R sessions on the same computer
 #  board <- board_folder("~/Dropbox") # share data with others using dropbox
 #  board <- board_folder("Z:\\my-team\pins") # share data using a shared network drive
-#  board <- board_rsconnect() # share data with RStudio Connect
+#  board <- board_connect() # share data with Posit Connect
 
 ## -----------------------------------------------------------------------------
 mtcars <- tibble::as_tibble(mtcars)

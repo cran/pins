@@ -19,7 +19,7 @@ board_s3(
 )
 }
 \arguments{
-\item{bucket}{Bucket name.}
+\item{bucket}{Bucket name. You can only write to an existing bucket.}
 
 \item{prefix}{Prefix within this bucket that this board will occupy.
 You can use this to maintain multiple independent pin boards within
@@ -35,16 +35,17 @@ S3's directory-like handling.}
 \item{region}{AWS region. If not specified, will be read from \code{AWS_REGION},
 or AWS config file.}
 
-\item{endpoint}{AWS endpoint to use; usually generated automatically from
-\code{region}.}
+\item{endpoint}{Endpoint to use; usually generated automatically for AWS
+from \code{region}. For MinIO, use the full URL (including scheme like
+\verb{https://}) of your MinIO endpoint.}
 
 \item{cache}{Cache path. Every board requires a local cache to avoid
 downloading files multiple times. The default stores in a standard
 cache location for your operating system, but you can override if needed.}
 }
 \description{
-Pin data to a bucket on Amazon's S3 service, using the paws.storage
-package.
+Pin data to an S3 bucket, such as on Amazon's S3 service or MinIO, using the
+paws.storage package.
 }
 \section{Authentication}{
 \code{board_s3()} is powered by the paws package which provides a wide range
@@ -81,10 +82,17 @@ authentication.
 
 \section{Details}{
 \itemize{
-\item If you point at a bucket that's not created by pins, some functions
-like \code{pins_list()} will work, but won't return useful output.
+\item The functions in pins do not create a new bucket. You can create
+a new bucket from R with \link[paws.storage:s3_create_bucket]{paws}.
+\item Some functions like \code{\link[=pin_list]{pin_list()}} will work for an S3 board, but don't
+return useful output.
 \item You can pass arguments for \link[paws.storage:s3_put_object]{paws.storage::s3_put_object} such as \code{Tagging}
 and \code{ServerSideEncryption} through the dots of \code{pin_write()}.
+\item \code{board_s3()} is powered by the paws.storage package, which is a
+suggested dependency of pins (not required for pins in general). If
+you run into errors when deploying content to a server like
+\url{https://www.shinyapps.io} or \href{https://posit.co/products/enterprise/connect/}{Connect},
+add \code{library(paws.storage)} to your app or document for \href{https://docs.posit.co/connect/user/troubleshooting/#render-missing-r-package}{automatic dependency discovery}.
 }
 }
 

@@ -1,3 +1,44 @@
+# pins 1.1.0
+
+## Breaking changes
+
+* Change the function `board_rsconnect()` to `board_connect()`, following 
+  RStudio's rebranding to Posit (#689).
+
+* Changed `type = "csv"` to use R's default value for `stringsAsFactors` i.e. 
+  `FALSE` (#664).
+  
+* Functions for viewing legacy API pins in the RStudio Viewer pane are now 
+  deprecated (when possible) or removed (#679).
+  
+* The functions for accessing Kaggle resource as pins are no longer supported.
+  We recommend you use the Kaggle CLI instead (#698).
+  
+## Other improvements
+
+* Added vignettes describing how to manage custom formats and web-based boards (#631, #685, @ijlyttle).
+
+* Added new board for Google Cloud Storage `board_gcs()` (#695).
+
+* Added new `tags` item to metadata for a pin (#677).
+
+* Improved error message for `pin_versions()` (#657).
+
+* Switched content and user caches for Connect to use environments instead
+  of files on disk. This means caches will no longer persist between sessions
+  but will be much less likely to end up in a broken state (#667).
+
+* Added `write_board_manifest()` to write a manifest file `_pins.yaml` 
+  recording all pins and their versions to the board's root directory.
+  This function only works for boards that are not read-only
+  (#661, based on work of @ijlyttle).
+  
+* Updated `board_url()` to handle versions recorded via a manifest file 
+  (#681, based on work of @ijlyttle).
+  
+* Updated code preview on Posit Connect (#690).
+
+
 # pins 1.0.3
 
 * The `arrow` package is now suggested, rather than imported (#644, @jonthegeek).
@@ -108,7 +149,7 @@ This version includes the following modern boards:
    (#498, @hongooi73).
 
 * `board_rsconnect()` shares data on 
-  [RStudio connect](https://www.rstudio.com/products/connect/). This board 
+  [RStudio connect](https://posit.co/products/enterprise/connect/). This board 
   supports both modern and legacy APIs, so that you and your colleagues can use 
   a mixture of pins versions as you transition to pins 1.0.0. Note that the
   compatibility is one directional: you can `pin_read()` pins created by 

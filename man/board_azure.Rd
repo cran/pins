@@ -41,6 +41,12 @@ but is relatively old and inefficient. ADLSgen2 is a modern replacement API
 for working with blobs that is much faster when working with directories.
 You should consider using this rather than the classic blob API where
 possible; see the examples below.
+
+\code{board_azure()} is powered by the AzureStor package, which is a suggested
+dependency of pins (not required for pins in general). If you run into errors
+when deploying content to a server like \url{https://www.shinyapps.io} or
+\href{https://posit.co/products/enterprise/connect/}{Connect}, add
+\code{library(AzureStor)} to your app or document for \href{https://docs.posit.co/connect/user/troubleshooting/#render-missing-r-package}{automatic dependency discovery}.
 }
 \examples{
 if (requireNamespace("AzureStor")) {
