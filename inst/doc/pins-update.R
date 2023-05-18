@@ -1,7 +1,8 @@
 ## ---- include = FALSE---------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  eval = rlang::is_installed("filelock")
 )
 
 ## ----setup--------------------------------------------------------------------
@@ -20,6 +21,9 @@ board <- board_local()
 
 pin_write(board, head(mtcars), "mtcars")
 pin_read(board, "mtcars")
+
+## ---- echo=FALSE--------------------------------------------------------------
+Sys.sleep(1)
 
 ## -----------------------------------------------------------------------------
 # Modern API

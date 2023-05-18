@@ -1,3 +1,12 @@
+skip_if_not_installed("filelock")
+skip_if_not_installed("webfakes")
+
+httpbin <- local_httpbin_app()
+httpbin_port <- httpbin$get_port()
+redact_port <- function(snapshot) {
+  snapshot <- gsub(httpbin_port, "<port>", snapshot, fixed = TRUE)
+}
+
 # main types --------------------------------------------------------------
 
 test_that("can pin() a data frame", {
@@ -66,13 +75,14 @@ test_that("can pin() remote CSV with URL and name", {
 test_that("unavailable url can use cache", {
   skip_on_cran()
   board <- legacy_temp()
+  url <- httpbin$url("/status/404")
 
-  expect_snapshot(error = TRUE, {
-    pin("http://httpstat.us/404", "test", board = board)
+  expect_snapshot({
+    pin(url, "test", board = board)
     pin(1:10, "test", board = board)
-    x <- pin("http://httpstat.us/404", "test", board = board)
+    x <- pin(url, "test", board = board)
     expect_equal(x, 1:10)
-  })
+  }, error = TRUE, transform = redact_port)
 })
 
 # custom metadata -------------------------------------------------------------------

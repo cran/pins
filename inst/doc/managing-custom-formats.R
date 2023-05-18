@@ -32,10 +32,10 @@ pin_upload_arrow <- function(board, x, name, ...) {
   # path deleted when `pin_upload_arrow()` exits
   path <- fs::path_temp(fs::path_ext_set(name, "arrow"))
   withr::defer(fs::file_delete(path))
- 
+  
   # custom writer
   arrow::write_feather(x, path, compression = "uncompressed")
-
+  
   pin_upload(board, paths = path, name = name, ...) 
 }
 
@@ -52,6 +52,6 @@ pin_upload_archive <- function(board, dir, name, ...) {
   path <- fs::path_temp(fs::path_ext_set(name, "tar.gz"))
   withr::defer(fs::file_delete(path))
   archive::archive_write_dir(path, dir)
-  pin_upload(b, paths = path, name = name, ...)
+  pin_upload(board = board, paths = path, name = name, ...)
 }
 

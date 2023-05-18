@@ -21,7 +21,7 @@
 #'   suggested dependency of pins (not required for pins in general). If
 #'   you run into errors when deploying content to a server like
 #'   <https://www.shinyapps.io> or [Connect](https://posit.co/products/enterprise/connect/),
-#'   add `requireNamespame(googleCloudStorageR)` to your app or document for [automatic
+#'   add `requireNamespace("googleCloudStorageR")` to your app or document for [automatic
 #'   dependency discovery](https://docs.posit.co/connect/user/troubleshooting/#render-missing-r-package).
 #'
 #' @inheritParams new_board
@@ -169,7 +169,7 @@ pin_store.pins_board_gcs <- function(board, name, paths, metadata,
                                      versioned = NULL, x = NULL, ...) {
   withr::local_options(list(googleAuthR.verbose = 4))
   ellipsis::check_dots_used()
-  check_name(name)
+  check_pin_name(name)
   version <- version_setup(board, name, version_name(metadata), versioned = versioned)
   version_dir <- fs::path(name, version)
   gcs_upload_yaml(

@@ -1,23 +1,25 @@
 
-# pins [<img src="man/figures/logo.png" align="right" height="139"/>](https://pins.rstudio.com)
+# pins <a href="https://pins.rstudio.com"><img src="man/figures/logo.png" align="right" height="138" /></a>
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/rstudio/pins-r/workflows/R-CMD-check/badge.svg)](https://github.com/rstudio/pins-r/actions)
+[![R-CMD-check](https://github.com/rstudio/pins-r/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/rstudio/pins-r/actions/workflows/R-CMD-check.yaml)
 [![CRAN
 Status](https://www.r-pkg.org/badges/version/pins)](https://cran.r-project.org/package=pins)
 [![Codecov test
 coverage](https://codecov.io/gh/rstudio/pins-r/branch/main/graph/badge.svg)](https://app.codecov.io/gh/rstudio/pins-r?branch=main)
-
+[![Lifecycle:
+stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 <!-- badges: end -->
 
 The pins package publishes data, models, and other R objects, making it
 easy to share them across projects and with your colleagues. You can pin
 objects to a variety of pin *boards*, including folders (to share on a
 networked drive or with services like DropBox), Posit Connect, Amazon
-S3, Azure storage and Microsoft 365 (OneDrive and SharePoint). Pins can
-be automatically versioned, making it straightforward to track changes,
-re-run analyses on historical data, and undo mistakes.
+S3, Google Cloud Storage, Azure storage, and Microsoft 365 (OneDrive and
+SharePoint). Pins can be automatically versioned, making it
+straightforward to track changes, re-run analyses on historical data,
+and undo mistakes.
 
 pins 1.0.0 includes a new more explicit API and greater support for
 versioning. The legacy API (`pin()`, `pin_get()`, and
@@ -41,7 +43,8 @@ install.packages("pins")
 You can install the development version from GitHub:
 
 ``` r
-remotes::install_github("rstudio/pins-r")
+# install.packages("pak")
+pak::pak("rstudio/pins-r")
 ```
 
 ## Usage
@@ -59,7 +62,8 @@ library(pins)
 board <- board_temp()
 board
 #> Pin board <pins_board_folder>
-#> Path: '/var/folders/hv/hzsmmyk9393_m7q3nscx1slc0000gn/T/Rtmp6DjQ3f/pins-1582c70487cea'
+#> Path:
+#> '/var/folders/hv/hzsmmyk9393_m7q3nscx1slc0000gn/T/RtmpPROJ1m/pins-17c753a542596'
 #> Cache size: 0
 ```
 
@@ -69,13 +73,14 @@ arguments: the board to pin to, an object, and a name:
 ``` r
 board %>% pin_write(head(mtcars), "mtcars")
 #> Guessing `type = 'rds'`
-#> Creating new version '20230120T165934Z-209d4'
+#> Creating new version '20230516T170700Z-a800d'
 #> Writing to pin 'mtcars'
 ```
 
 As you can see, the data saved as an `.rds` by default, but depending on
 what you’re saving and who else you want to read it, you might use the
-`type` argument to instead save it as a `csv`, `json`, or `arrow` file.
+`type` argument to instead save it as a Parquet, Arrow, CSV, or JSON
+file.
 
 You can later retrieve the pinned data with `pin_read()`:
 
@@ -99,7 +104,7 @@ Connect](https://posit.co/products/enterprise/connect/) you can use
 
 ``` r
 board <- board_connect()
-#> Connecting to RSC 1.9.0.1 at <https://connect.rstudioservices.com>
+#> Connecting to Posit Connect 2023.01.0 at <https://colorado.posit.co/rsc>
 board %>% pin_write(tidy_sales_data, "sales-summary", type = "rds")
 #> Writing to pin 'hadley/sales-summary'
 ```
@@ -117,5 +122,5 @@ Connect permissions pane.
 
 The pins package also includes boards that allow you to share data on
 services like Amazon’s S3 (`board_s3()`), Azure’s blob storage
-(`board_azure()`), and Microsoft SharePoint (`board_ms365()`). Learn
-more in `vignette("pins")`.
+(`board_azure()`), and Google Cloud Storage (`board_gcs()`). Learn more
+in `vignette("pins")`.

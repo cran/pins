@@ -17,7 +17,8 @@ pin_write(
   metadata = NULL,
   versioned = NULL,
   tags = NULL,
-  ...
+  ...,
+  force_identical_write = FALSE
 )
 }
 \arguments{
@@ -38,9 +39,9 @@ you expect. You can find the hash of an existing pin by looking for
 \item{x}{An object (typically a data frame) to pin.}
 
 \item{type}{File type used to save \code{x} to disk. Must be one of
-"csv", "json", "rds", "arrow", or "qs". If not supplied, will use JSON for
-bare lists and RDS for everything else. Be aware that CSV and JSON are
-plain text formats, while RDS, Arrow, and
+"csv", "json", "rds", "parquet", "arrow", or "qs". If not supplied, will
+use JSON for bare lists and RDS for everything else. Be aware that CSV and
+JSON are plain text formats, while RDS, Parquet, Arrow, and
 \href{https://CRAN.R-project.org/package=qs}{qs} are binary formats.}
 
 \item{title}{A title for the pin; most important for shared boards so that
@@ -58,6 +59,10 @@ use the default for \code{board}}
 
 \item{tags}{A character vector of tags for the pin; most important for
 discoverability on shared boards.}
+
+\item{force_identical_write}{Store the pin even if the pin contents are
+identical to the last version (compared using the hash). Only the pin
+contents are compared, not the pin metadata. Defaults to \code{FALSE}.}
 }
 \value{
 \code{pin_read()} returns an R object read from the pin;

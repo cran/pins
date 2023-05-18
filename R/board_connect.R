@@ -52,6 +52,12 @@
 #' @param account A user name used to disambiguate multiple Connect accounts.
 #' @param key The Posit Connect API key.
 #' @param output_files `r lifecycle::badge("deprecated")` No longer supported.
+#' @param use_cache_on_failure If the pin fails to download, is it OK to
+#'   use the last cached version? Defaults to `is_interactive()` so you'll
+#'   be robust to poor internet connectivity when exploring interactively,
+#'   but you'll get clear errors when the code is deployed. Note that this
+#'   argument controls whether you use the cache for reading pins, but you can't
+#'   create a board object unless you can connect to your Connect server.
 #' @family boards
 #' @export
 #' @examples
@@ -73,7 +79,7 @@ board_connect <- function(auth = c("auto", "manual", "envvar", "rsconnect"),
                           use_cache_on_failure = is_interactive()) {
 
   server <- rsc_server(auth, server, account, key)
-  cache <- cache %||% board_cache_path(paste0("connect-", hash(url)))
+  cache <- cache %||% board_cache_path(paste0("connect-", hash(server$url)))
 
   board <- new_board(
     "pins_board_connect",
@@ -122,9 +128,9 @@ board_rsconnect <- function(auth = c("auto", "manual", "envvar", "rsconnect"),
                             use_cache_on_failure = is_interactive(),
                             versions = deprecated()) {
 
-  lifecycle::deprecate_soft("1.1.0", "board_rsconnect()", "board_connect()")
+  lifecycle::deprecate_warn("1.1.0", "board_rsconnect()", "board_connect()")
   if (lifecycle::is_present(versions)) {
-    lifecycle::deprecate_warn("1.0.0", "board_rsconnect(versions)", "board_rsconnect(versioned)")
+    lifecycle::deprecate_stop("1.0.0", "board_rsconnect(versions)", "board_rsconnect(versioned)")
     versioned <- versions
   }
 
@@ -258,7 +264,7 @@ pin_store.pins_board_connect <- function(
 {
   # https://docs.posit.co/connect/1.8.0.4/cookbook/deploying/
 
-  check_name(rsc_parse_name(name)$name)
+  check_pin_name(rsc_parse_name(name)$name)
 
   versioned <- versioned %||% board$versioned
   if (!is.null(access_type)) {
@@ -448,7 +454,7 @@ rsc_content_find_live <- function(board, name, version = NULL, warn = TRUE) {
   if (is.null(name$owner)) {
     if (length(json) > 1) {
       # TODO: Find user names and offer
-      cli::cli_abort(c(
+      cli_abort(c(
         "Multiple pins with name {.val {name$name}}",
         i = "Use a fully specified name including user name like {.val {paste0('julia/', name$name)}}"
       ))
@@ -724,13 +730,7 @@ board_connect_test <- function(...) {
 # Use Colorado for local testing
 connect_has_colorado <- function() {
   accounts <- rsconnect::accounts()
-  any(c("colorado.rstudio.com", "colorado.posit.co") %in% accounts$server)
-}
-board_connect_colorado <- function(...) {
-  if (!connect_has_colorado()) {
-    testthat::skip("board_connect_colorado() only works with Posit's demo server")
-  }
-  board_connect(..., server = "colorado.posit.co", auth = "rsconnect", cache = fs::file_temp())
+  "colorado.posit.co" %in% accounts$server
 }
 
 board_connect_colorado <- function(...) {
@@ -763,4 +763,29 @@ read_creds <- function() {
   }
   readRDS(path)
 }
+add_another_user <- function(board, user_name, content_id) {
 
+  ## get user GUID for new owner from user_name
+  path <- glue("v1/users/")
+  path <- rsc_path(board, path)
+  auth <- rsc_auth(board, path, "GET")
+  query <- glue("prefix={user_name}")
+  resp <- httr::GET(board$url, path = path, query = query, auth)
+  httr::stop_for_status(resp)
+  res <- httr::content(resp)
+  principal_guid <- res$results[[1]]$guid
+
+  ## add user_name as owner for content at GUID
+  body <- glue('{{
+  "principal_guid": "{principal_guid}",
+  "principal_type": "user",
+  "role": "owner"
+  }}')
+
+  path <- glue("v1/content/{content_id}/permissions")
+  path <- rsc_path(board, path)
+  auth <- rsc_auth(board, path, "POST")
+  resp <- httr::POST(board$url, path = path, body = body, auth)
+  httr::stop_for_status(resp)
+  invisible(resp)
+}

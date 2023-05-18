@@ -35,7 +35,7 @@
 pin_versions <- function(board, name, ..., full = deprecated()) {
   ellipsis::check_dots_used()
   if (lifecycle::is_present(full)) {
-    lifecycle::deprecate_warn("1.0.0", "pin_versions(full)")
+    lifecycle::deprecate_stop("1.0.0", "pin_versions(full)")
   }
 
   if (missing(name) && is.board(board)) {
@@ -146,11 +146,7 @@ versions_template <- function(version = character()) {
 }
 
 version_name <- function(metadata) {
-  if (is_testing()) {
-    paste0("20120304T050607Z-", substr(metadata$pin_hash, 1, 5))
-  } else {
-    paste0(metadata$created, "-", substr(metadata$pin_hash, 1, 5))
-  }
+  paste0(metadata$created, "-", substr(metadata$pin_hash, 1, 5))
 }
 
 version_from_path <- function(x) {
@@ -158,17 +154,24 @@ version_from_path <- function(x) {
 
   pieces <- strsplit(x, "-")
   n_ok <- lengths(pieces) == 2
-  out$created[n_ok] <- parse_8601_compact(map_chr(pieces[n_ok], "[[", 1))
-  out$hash[n_ok] <- map_chr(pieces[n_ok], "[[", 2)
+  out$created[n_ok] <- parse_8601_compact(map_chr(pieces[n_ok], 1))
+  out$hash[n_ok] <- map_chr(pieces[n_ok], 2)
 
   out
 }
 
-version_setup <- function(board, name, new_version, versioned = NULL) {
+version_setup <- function(board, name, new_version, versioned = NULL, call = caller_env()) {
   if (pin_exists(board, name)) {
     versions <- pin_versions(board, name)
     old_version <- versions$version[[1]]
     n_versions <- nrow(versions)
+    if (old_version == new_version) {
+      cli::cli_abort(c(
+        "The new version {.val {new_version}} is the same as the most recent version.",
+        i = "Did you try to create a new version with the same timestamp as the last version?"
+      ),
+      call = call)
+    }
   } else {
     n_versions <- 0
   }

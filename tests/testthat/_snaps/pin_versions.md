@@ -26,15 +26,25 @@
     Code
       x <- pin_versions(board, "x", full = TRUE)
     Condition
-      Warning:
-      The `full` argument of `pin_versions()` is deprecated as of pins 1.0.0.
+      Error:
+      ! The `full` argument of `pin_versions()` was deprecated in pins 1.0.0 and is now defunct.
+
+# informative error for writing with same version
+
+    Code
+      board %>% pin_write(1:10, "x")
+      board %>% pin_write(1:10, "x", force_identical_write = TRUE)
+    Condition
+      Error in `pin_store()`:
+      ! The new version "20120304T050607Z-xxxxx" is the same as the most recent version.
+      i Did you try to create a new version with the same timestamp as the last version?
 
 # can prune old versions
 
     Code
       pin_versions_prune(board, "x", n = 1)
     Message
-      Deleting versions: 20120304T050607Z-3de1f, 20120304T050607Z-caa1b, 20120304T050607Z-e4e08
+      Deleting versions: 20130104T050607Z-xxxxx, 20130204T050607Z-yyyyy, 20130304T050607Z-zzzzz
     Code
       pin_versions_prune(board, "x", n = 1)
     Message

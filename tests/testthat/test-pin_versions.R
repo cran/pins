@@ -1,3 +1,5 @@
+skip_if_not_installed("filelock")
+
 test_that("can use old pin_versions() api", {
   board <- legacy_local()
   pin(x = 1:5, "x", board = board)
@@ -23,7 +25,7 @@ test_that("`full` is deprecated", {
 
   expect_snapshot({
     x <- pin_versions(board, "x", full = TRUE)
-  })
+  }, error = TRUE)
 })
 
 test_that("can parse versions from path", {
@@ -33,12 +35,28 @@ test_that("can parse versions from path", {
   expect_equal(out$hash, "hash")
 })
 
+test_that("informative error for writing with same version", {
+  local_mocked_bindings(version_name = function(metadata) "20120304T050607Z-xxxxx")
+  board <- board_temp(versioned = TRUE)
+  expect_snapshot(error = TRUE, {
+    board %>% pin_write(1:10, "x")
+    board %>% pin_write(1:10, "x", force_identical_write = TRUE)
+  })
+})
 
 # versions pruning --------------------------------------------------------
 
 test_that("can prune old versions", {
-  board <- board_temp(versioned = TRUE)
+  skip_if_not_installed("mockery")
 
+  board <- board_temp(versioned = TRUE)
+  mock_version_name <- mockery::mock(
+    "20130104T050607Z-xxxxx",
+    "20130204T050607Z-yyyyy",
+    "20130304T050607Z-zzzzz",
+    "20130404T050607Z-aaaaa"
+  )
+  local_mocked_bindings(version_name = mock_version_name)
   pin_write(board, 1, "x")
   pin_write(board, 2, "x")
   pin_write(board, 3, "x")

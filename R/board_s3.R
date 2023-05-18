@@ -51,7 +51,7 @@
 #'   suggested dependency of pins (not required for pins in general). If
 #'   you run into errors when deploying content to a server like
 #'   <https://www.shinyapps.io> or [Connect](https://posit.co/products/enterprise/connect/),
-#'   add `library(paws.storage)` to your app or document for [automatic
+#'   add `requireNamespace("paws.storage")` to your app or document for [automatic
 #'   dependency discovery](https://docs.posit.co/connect/user/troubleshooting/#render-missing-r-package).
 #'
 #' @inheritParams new_board
@@ -144,14 +144,25 @@ board_s3_test <- function(...) {
 
 #' @export
 pin_list.pins_board_s3 <- function(board, ...) {
-  # TODO: implement pagination
+
   resp <- board$svc$list_objects_v2(
     Bucket = board$bucket,
     Prefix = board$prefix,
     Delimiter = "/"
   )
 
-  prefixes <- map_chr(resp$CommonPrefixes, ~ .x$Prefix)
+  final_list <- resp$CommonPrefixes
+
+  while(!is_empty(resp$NextContinuationToken)) {
+    resp <- board$svc$list_objects_v2(
+      Bucket = board$bucket,
+      Prefix = board$prefix,
+      Delimiter = "/",
+      ContinuationToken = resp$NextContinuationToken)
+    final_list <- c(final_list, resp$CommonPrefixes)
+  }
+
+  prefixes <- map_chr(final_list, ~ .x$Prefix)
   strip_prefix(sub("/$", "", prefixes), board$prefix)
 }
 
@@ -176,9 +187,20 @@ pin_versions.pins_board_s3 <- function(board, name, ...) {
   resp <- board$svc$list_objects_v2(
     Bucket = board$bucket,
     Prefix = paste0(board$prefix, name, "/"),
-    Delimiter = "/"
-  )
-  paths <- fs::path_file(map_chr(resp$CommonPrefixes, ~ .$Prefix))
+    Delimiter = "/")
+
+  final_list <- resp$CommonPrefixes
+
+  while(!is_empty(resp$NextContinuationToken)) {
+    resp <- board$svc$list_objects_v2(
+      Bucket = board$bucket,
+      Prefix = paste0(board$prefix, name, "/"),
+      Delimiter = "/",
+      ContinuationToken = resp$NextContinuationToken)
+    final_list <- c(final_list, resp$CommonPrefixes)
+  }
+
+  paths <- fs::path_file(map_chr(final_list, ~ .$Prefix))
   version_from_path(paths)
 }
 
@@ -226,7 +248,7 @@ pin_fetch.pins_board_s3 <- function(board, name, version = NULL, ...) {
 pin_store.pins_board_s3 <- function(board, name, paths, metadata,
                                     versioned = NULL, x = NULL, ...) {
   ellipsis::check_dots_used()
-  check_name(name)
+  check_pin_name(name)
   version <- version_setup(board, name, version_name(metadata), versioned = versioned)
 
   version_dir <- fs::path(name, version)
@@ -281,7 +303,7 @@ s3_delete_dir <- function(board, dir) {
     return(invisible())
   }
 
-  delete <- list(Objects = map(resp$Contents, "[", "Key"))
+  delete <- list(Objects = map(resp$Contents, ~ list(Key = .$Key)))
   board$svc$delete_objects(board$bucket, Delete = delete)
   invisible()
 }

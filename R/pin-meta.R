@@ -38,16 +38,18 @@
 #' b %>% pin_download("mtcars")
 #'
 #' # Use tags instead
-#' b %>% pin_write(head(mtcars), "mtcars", tags = c("fuel-efficiency", "automotive"))
+#' b %>% pin_write(tail(mtcars), "mtcars", tags = c("fuel-efficiency", "automotive"))
 #' b %>% pin_meta("mtcars")
 #'
 pin_meta <- function(board, name, version = NULL, ...) {
-  check_board(board, "pin_meta()", "pin_info()")
+  check_board(board, "pin_meta", "pin_info")
   UseMethod("pin_meta")
 }
 
+possibly_pin_meta <- possibly(pin_meta)
+
 multi_meta <- function(board, names) {
-  meta <- map(names, pin_meta, board = board)
+  meta <- map(names, possibly(pin_meta, empty_local_meta), board = board)
 
   if (length(names) == 0) {
     tibble::tibble(
@@ -66,7 +68,7 @@ multi_meta <- function(board, names) {
       type = map_chr(meta, ~ .x$type %||% NA_character_),
       title = map_chr(meta, ~ .x$title %||% NA_character_),
       created = .POSIXct(map_dbl(meta, ~ .x$created %||% NA_real_)),
-      file_size = fs::as_fs_bytes(map_dbl(meta, ~ sum(.x$file_size) %||% NA_real_)),
+      file_size = fs::as_fs_bytes(map_dbl(meta, ~ sum(.x$file_size %||% NA_real_))),
       meta = meta
     )
   }
@@ -89,6 +91,8 @@ local_meta <- function(x, name, dir, url = NULL, version = NULL, ...) {
   structure(x, class = "pins_meta")
 }
 
+empty_local_meta <- local_meta(x = NULL, name = NULL, dir = NULL)
+
 test_api_meta <- function(board) {
   testthat::test_that("can round-trip pin metadata", {
     name <- local_pin(board, 1, title = "title", description = "desc", metadata = list(a = "a"), tags = c("tag1", "tag2"))
@@ -103,7 +107,8 @@ test_api_meta <- function(board) {
   testthat::test_that("can update pin metadata", {
     # RSC requires at least 3 characters
     name <- local_pin(board, 1, title = "xxx-a1", description = "xxx-a2")
-    pin_write(board, 1, name, title = "xxx-b1", description = "xxx-b2")
+    # change content so hash changes
+    pin_write(board, 2, name, title = "xxx-b1", description = "xxx-b2")
 
     meta <- pin_meta(board, name)
     testthat::expect_equal(meta$title, "xxx-b1")
@@ -138,7 +143,7 @@ test_api_meta <- function(board) {
     testthat::expect_true(meta$type %in% object_types)
     testthat::expect_vector(meta$title, character(), 1)
     testthat::expect_vector(meta$created, .POSIXct(double()), 1)
-    testthat::expect_vector(meta$api_version, double(), 1)
+    testthat::expect_vector(meta$api_version, integer(), 1)
 
     testthat::expect_vector(meta$user, list())
     testthat::expect_vector(meta$local, list())
@@ -152,13 +157,13 @@ print.pins_meta <- function(x, ...) {
   invisible(x)
 }
 
-check_pin_version <- function(board, name, version) {
+check_pin_version <- function(board, name, version, call = caller_env()) {
   if (is.null(version)) {
     last(pin_versions(board, name)$version) %||% abort("No versions found")
   } else if (is_string(version)) {
     # TODO: provide pin_version_exists() so this can return informative error
     version
   } else {
-    abort("`version` must be a string or `NULL`")
+    check_string(version, allow_null = TRUE)
   }
 }

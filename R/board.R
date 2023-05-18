@@ -56,37 +56,21 @@ new_board_v1 <- function(board, cache, versioned = FALSE, ...) {
 
 
 #' @export
-print.pins_board <- function(x, ...) {
-  cat(paste0(cli::style_bold("Pin board"), " <", class(x)[[1]], ">\n"))
-
+format.pins_board <- function(x, ...) {
+  first_class <- class(x)[[1]]
   desc <- board_desc(x)
-  if (length(desc) > 0) {
-    cat(paste0(desc, "\n", collapse = ""))
-  }
-  cat("Cache size: ", format(cache_size(x)), "\n", sep = "")
-
-  if (1 %in% x$api) {
-    pins <- pin_list(x)
-  } else {
-    pins <- pin_find(board = x)$name
-  }
-
-  # Some boards (e.g. kaggle_competitions have an infeasibly large number
-  # and there's no point in listing them all)
-  if (!identical(pins, NA)) {
-    n <- length(pins)
-    if (n > 0) {
-      if (n > 20) {
-        pins <- c(pins[1:19], "...")
-      }
-      contents <- paste0(
-        "Pins [", n, "]: ",
-        paste0("'", pins, "'", collapse = ", ")
-      )
-      cat(strwrap(contents, exdent = 2), sep = "\n")
+  cli_format_method({
+    cli_text("Pin board {.cls {first_class}}")
+    if (length(desc) > 0) {
+      cli_text("{desc}")
     }
-  }
+    cli_text("Cache size: {format(cache_size(x))}")
+  })
+}
 
+#' @export
+print.pins_board <- function(x, ...) {
+  cat(format(x), sep = "\n")
   invisible(x)
 }
 
@@ -99,17 +83,6 @@ cache_size <- function(board) {
 }
 
 is.board <- function(x) inherits(x, "pins_board")
-
-#' Local storage path
-#'
-#' Deprecated: please use [board_cache_path()] instead.
-#'
-#' @export
-#' @rdname custom-boards-utils
-#' @keywords internal
-board_local_storage <- function(...) {
-  lifecycle::deprecate_stop("1.0.0", "board_local_storage()", "board_cache_path()")
-}
 
 #' Retrieve Default Cache Path
 #'
@@ -253,7 +226,7 @@ write_board_manifest_yaml <- function(board, manifest, ...) {
 
 #' @export
 write_board_manifest_yaml.default <- function(board, manifest, ...) {
-  abort(glue::glue("Manifest not supported for {class(board)[[1]]}"))
+  abort(glue("Manifest not supported for {class(board)[[1]]}"))
 }
 
 

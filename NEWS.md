@@ -1,3 +1,29 @@
+# pins 1.2.0
+
+## Breaking changes
+
+* `pin_write()` no longer writes identical pin contents by default, and gains a
+  `force_identical_write` argument for writing even when the pin contents are 
+  identical to the last version (#735).
+
+## Other improvements
+
+* The `print` method for boards no longer calls `pin_list()` internally (#718).
+
+* `board_s3()` now uses pagination for listing and versioning (#719, @mzorko).
+
+* Added `type = "parquet"` to read and write Parquet files (#729).
+
+* Updated error messages and type checking (#731) along with testing strategy (#724).
+
+* Added new check for whether a new version is the same as the previous version,
+  as can happen when writing pin versions very quickly (#727).
+  
+* Added new `headers` argument for `board_url()`, mostly for authentication, as 
+  well as new board for Connect vanity URLs `board_connect_url()` (#732).  
+
+* Fixed bug in `cache_prune()` to correctly find caches for `board_url()` (#734).
+
 # pins 1.1.0
 
 ## Breaking changes

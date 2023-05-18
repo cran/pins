@@ -9,7 +9,7 @@
 #' @param signature Should a signature to identify this pin be shown?
 #' @param ... Additional parameters.
 #'
-#' @examples
+#' @examplesIf rlang::is_installed("filelock")
 #' # old API
 #' board_register_local(cache = tempfile())
 #' pin(mtcars)
@@ -28,7 +28,7 @@ pin_info <- function(name,
                      ...) {
 
   if (is.board(board) && !0 %in% board$api) {
-    this_not_that("pin_meta()", "pin_info()")
+    this_not_that("pin_meta", "pin_info")
   }
 
   entry <- pin_find(

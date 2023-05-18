@@ -378,7 +378,7 @@ or GitHub repo, or perhaps <code>board_s3()</code>.</p>
 file:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_write</span>(mtcars, <span class="at">type =</span> <span class="st">&quot;json&quot;</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Using `name = &#39;mtcars&#39;`</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20120304T050607Z-c4fcd&#39;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20230517T161742Z-c4fcd&#39;</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Writing to pin &#39;mtcars&#39;</span></span></code></pre></div>
 <p>Let’s make a new version of this data by adding a column:
 <code>lper100km</code>, consumption in liters per 100 km. This could
@@ -387,7 +387,7 @@ make our data friendlier to folks outside the United States.</p>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>mtcars_metric<span class="sc">$</span>lper100km <span class="ot">&lt;-</span> <span class="fl">235.215</span> <span class="sc">/</span> mtcars<span class="sc">$</span>mpg</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_write</span>(mtcars_metric, <span class="at">name =</span> <span class="st">&quot;mtcars&quot;</span>, <span class="at">type =</span> <span class="st">&quot;json&quot;</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20120304T050607Z-19d36&#39;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20230517T161744Z-19d36&#39;</span></span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Writing to pin &#39;mtcars&#39;</span></span></code></pre></div>
 <p>Let’s check our board to ensure we have one pin named
 <code>&quot;mtcars&quot;</code>, with two versions:</p>
@@ -398,8 +398,8 @@ make our data friendlier to folks outside the United States.</p>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 3</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   version                created             hash </span></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;                  &lt;dttm&gt;              &lt;chr&gt;</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 20120304T050607Z-19d36 2012-03-03 22:06:07 19d36</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 20120304T050607Z-c4fcd 2012-03-03 22:06:07 c4fcd</span></span></code></pre></div>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 20230517T161742Z-c4fcd 2023-05-17 10:17:42 c4fcd</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 20230517T161744Z-19d36 2023-05-17 10:17:44 19d36</span></span></code></pre></div>
 <p>Because a <code>board_url()</code> is consumed over the web, it
 doesn’t have access to a file system the way, for example, a
 <code>board_folder()</code> has; we can work around this by creating a
@@ -422,8 +422,8 @@ date.</p>
 <p>We can inspect its contents to see each pin in the board, and each
 version of each pin:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mtcars</span><span class="kw">:</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> mtcars/20120304T050607Z-19d36/</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> mtcars/20120304T050607Z-c4fcd/</span></span></code></pre></div>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> mtcars/20230517T161742Z-c4fcd/</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> mtcars/20230517T161744Z-19d36/</span></span></code></pre></div>
 <p>At this point, we would publish the folder containing the board as a
 part of a web site. Let’s pretend that we have served the folder from
 our fake website, <code>https://not.real.website.co/pins/</code>.</p>
@@ -444,27 +444,27 @@ discover the pins and versions:</p>
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 3</span></span>
 <span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   version                created             hash </span></span>
 <span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;                  &lt;dttm&gt;              &lt;chr&gt;</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 20120304T050607Z-19d36 2012-03-03 22:06:07 19d36</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 20120304T050607Z-c4fcd 2012-03-03 22:06:07 c4fcd</span></span></code></pre></div>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 20230517T161742Z-c4fcd 2023-05-17 10:17:42 c4fcd</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 20230517T161744Z-19d36 2023-05-17 10:17:44 19d36</span></span></code></pre></div>
 <p>We can read the most-recent version of the <code>&quot;mtcars&quot;</code>
 pin:</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>web_board <span class="sc">%&gt;%</span> <span class="fu">pin_read</span>(<span class="st">&quot;mtcars&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    mpg cyl disp  hp drat    wt  qsec vs am gear carb</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 21.0   6  160 110 3.90 2.620 16.46  0  1    4    4</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 22.8   4  108  93 3.85 2.320 18.61  1  1    4    1</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 21.4   6  258 110 3.08 3.215 19.44  1  0    3    1</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2</span></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 18.1   6  225 105 2.76 3.460 20.22  1  0    3    1</span></span></code></pre></div>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    mpg cyl disp  hp drat    wt  qsec vs am gear carb lper100km</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 21.0   6  160 110 3.90 2.620 16.46  0  1    4    4   11.2007</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4   11.2007</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 22.8   4  108  93 3.85 2.320 18.61  1  1    4    1   10.3164</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 21.4   6  258 110 3.08 3.215 19.44  1  0    3    1   10.9914</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2   12.5783</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 18.1   6  225 105 2.76 3.460 20.22  1  0    3    1   12.9953</span></span></code></pre></div>
 <p>We can also read the first version:</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>web_board <span class="sc">%&gt;%</span> <span class="fu">pin_read</span>(<span class="st">&quot;mtcars&quot;</span>, <span class="at">version =</span> versions<span class="sc">$</span>version[[<span class="dv">1</span>]]) <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    mpg cyl disp  hp drat    wt  qsec vs am gear carb lper100km</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 21.0   6  160 110 3.90 2.620 16.46  0  1    4    4   11.2007</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4   11.2007</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 22.8   4  108  93 3.85 2.320 18.61  1  1    4    1   10.3164</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 21.4   6  258 110 3.08 3.215 19.44  1  0    3    1   10.9914</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2   12.5783</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 18.1   6  225 105 2.76 3.460 20.22  1  0    3    1   12.9953</span></span></code></pre></div>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    mpg cyl disp  hp drat    wt  qsec vs am gear carb</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 21.0   6  160 110 3.90 2.620 16.46  0  1    4    4</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 22.8   4  108  93 3.85 2.320 18.61  1  1    4    1</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 21.4   6  258 110 3.08 3.215 19.44  1  0    3    1</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 18.1   6  225 105 2.76 3.460 20.22  1  0    3    1</span></span></code></pre></div>
 </div>
 <div id="publishing-platforms" class="section level2">
 <h2>Publishing platforms</h2>

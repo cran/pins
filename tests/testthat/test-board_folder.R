@@ -5,6 +5,7 @@ test_api_manifest(board_temp())
 
 test_that("has useful print method", {
   path <- withr::local_tempfile()
+  withr::local_options(cli.width = 120)
   expect_snapshot(
     board_folder(path),
     transform = ~ gsub("Path: .*", "Path: '<redacted>'", .x)
@@ -73,11 +74,20 @@ test_that("contents of manifest match", {
 
 
 test_that("generates useful messages", {
+  skip_if_not_installed("mockery")
+
+  mock_version_name <- mockery::mock(
+    "20130104T050607Z-xxxxx",
+    "20130204T050607Z-yyyyy",
+    "20130304T050607Z-zzzzz"
+  )
+ local_mocked_bindings(version_name = mock_version_name)
+
   ui_loud()
   b <- board_temp()
   expect_snapshot({
     pin_write(b, 1:5, "x", type = "rds")
-    pin_write(b, 1:5, "x", type = "rds")
     pin_write(b, 1:6, "x", type = "rds")
+    pin_write(b, 1:7, "x", type = "rds")
   })
 })
