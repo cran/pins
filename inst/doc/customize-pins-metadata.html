@@ -350,62 +350,62 @@ use case.</p>
 file(s) in a customized way, see
 <code>vignette(&quot;managing-custom-formats&quot;)</code>.</p>
 <p>We’ll begin by creating a temporary board for demonstration:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_temp</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_temp</span>()</span></code></pre></div>
 <div id="a-function-to-store-factors" class="section level1">
 <h1>A function to store factors</h1>
 <p>Say you want to store a factor as JSON together with the
 <em>levels</em> of the factor in the metadata. We can write a function
 wrapping <code>pin_write()</code> that creates the standardized metadata
 we are interested in and writes it in a consistent way.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>pin_write_factor_json <span class="ot">&lt;-</span> <span class="cf">function</span>(board, </span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                                  x, </span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                                  name, </span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">title =</span> <span class="cn">NULL</span>, </span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">description =</span> <span class="cn">NULL</span>, </span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">metadata =</span> <span class="fu">list</span>(), </span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">versioned =</span> <span class="cn">NULL</span>, </span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">tags =</span> <span class="cn">NULL</span>, </span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                                  ...) {</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.factor</span>(x)) rlang<span class="sc">::</span><span class="fu">abort</span>(<span class="st">&quot;`x` is not a factor&quot;</span>)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  factor_levels <span class="ot">&lt;-</span> <span class="fu">levels</span>(x)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  metadata <span class="ot">&lt;-</span> <span class="fu">modifyList</span>(metadata, <span class="fu">list</span>(<span class="at">factor_levels =</span> factor_levels))</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pin_write</span>(</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">board =</span> board, </span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> x, </span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> name, </span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;json&quot;</span>, </span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> title, </span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">description =</span> description, </span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">metadata =</span> metadata,</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    ...</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>pin_write_factor_json <span class="ot">&lt;-</span> <span class="cf">function</span>(board, </span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>                                  x, </span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>                                  name, </span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>                                  <span class="at">title =</span> <span class="cn">NULL</span>, </span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>                                  <span class="at">description =</span> <span class="cn">NULL</span>, </span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>                                  <span class="at">metadata =</span> <span class="fu">list</span>(), </span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>                                  <span class="at">versioned =</span> <span class="cn">NULL</span>, </span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>                                  <span class="at">tags =</span> <span class="cn">NULL</span>, </span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>                                  ...) {</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.factor</span>(x)) rlang<span class="sc">::</span><span class="fu">abort</span>(<span class="st">&quot;`x` is not a factor&quot;</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  factor_levels <span class="ot">&lt;-</span> <span class="fu">levels</span>(x)</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>  metadata <span class="ot">&lt;-</span> <span class="fu">modifyList</span>(metadata, <span class="fu">list</span>(<span class="at">factor_levels =</span> factor_levels))</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  <span class="fu">pin_write</span>(</span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>    <span class="at">board =</span> board, </span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>    <span class="at">x =</span> x, </span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>    <span class="at">name =</span> name, </span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;json&quot;</span>, </span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>    <span class="at">title =</span> title, </span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>    <span class="at">description =</span> description, </span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>    <span class="at">metadata =</span> metadata,</span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>    ...</span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a>  )</span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a>}</span></code></pre></div>
 <p>We can use this new function to write a pin as JSON with our specific
 metadata:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>ten_letters <span class="ot">&lt;-</span> <span class="fu">factor</span>(<span class="fu">sample</span>(letters, <span class="at">size =</span> <span class="dv">10</span>), <span class="at">levels =</span> letters)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_write_factor_json</span>(ten_letters, <span class="st">&quot;letters-as-json&quot;</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20230517T161736Z-f6672&#39;</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Writing to pin &#39;letters-as-json&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>ten_letters <span class="ot">&lt;-</span> <span class="fu">factor</span>(<span class="fu">sample</span>(letters, <span class="at">size =</span> <span class="dv">10</span>), <span class="at">levels =</span> letters)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_write_factor_json</span>(ten_letters, <span class="st">&quot;letters-as-json&quot;</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20230816T140740Z-f7be7&#39;</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; Writing to pin &#39;letters-as-json&#39;</span></span></code></pre></div>
 <div id="a-function-to-read-factors" class="section level2">
 <h2>A function to read factors</h2>
 <p>It’s possible to read this pin using the regular
 <code>pin_read()</code> function, but the object we get is no longer a
 factor!</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_read</span>(<span class="st">&quot;letters-as-json&quot;</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;h&quot; &quot;o&quot; &quot;t&quot; &quot;b&quot; &quot;d&quot; &quot;y&quot; &quot;j&quot; &quot;c&quot; &quot;l&quot; &quot;i&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_read</span>(<span class="st">&quot;letters-as-json&quot;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;b&quot; &quot;m&quot; &quot;f&quot; &quot;x&quot; &quot;p&quot; &quot;j&quot; &quot;o&quot; &quot;a&quot; &quot;d&quot; &quot;c&quot;</span></span></code></pre></div>
 <p>Instead, we can also write a special function for reading, to
 reconstruct the factor including its levels:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>pin_read_factor_json <span class="ot">&lt;-</span> <span class="cf">function</span>(board, name, <span class="at">version =</span> <span class="cn">NULL</span>, <span class="at">hash =</span> <span class="cn">NULL</span>, ...) {</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  ret <span class="ot">&lt;-</span> <span class="fu">pin_read</span>(<span class="at">board =</span> board, <span class="at">name =</span> name, <span class="at">version =</span> version, <span class="at">hash =</span> hash, ...)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  meta <span class="ot">&lt;-</span> <span class="fu">pin_meta</span>(<span class="at">board =</span> board, <span class="at">name =</span> name, <span class="at">version =</span> version, ...)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">factor</span>(ret, <span class="at">levels =</span> meta<span class="sc">$</span>user<span class="sc">$</span>factor_levels)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_read_factor_json</span>(<span class="st">&quot;letters-as-json&quot;</span>)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] h o t b d y j c l i</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Levels: a b c d e f g h i j k l m n o p q r s t u v w x y z</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>pin_read_factor_json <span class="ot">&lt;-</span> <span class="cf">function</span>(board, name, <span class="at">version =</span> <span class="cn">NULL</span>, <span class="at">hash =</span> <span class="cn">NULL</span>, ...) {</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  ret <span class="ot">&lt;-</span> <span class="fu">pin_read</span>(<span class="at">board =</span> board, <span class="at">name =</span> name, <span class="at">version =</span> version, <span class="at">hash =</span> hash, ...)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  meta <span class="ot">&lt;-</span> <span class="fu">pin_meta</span>(<span class="at">board =</span> board, <span class="at">name =</span> name, <span class="at">version =</span> version, ...)</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="fu">factor</span>(ret, <span class="at">levels =</span> meta<span class="sc">$</span>user<span class="sc">$</span>factor_levels)</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>}</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_read_factor_json</span>(<span class="st">&quot;letters-as-json&quot;</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt;  [1] b m f x p j o a d c</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; Levels: a b c d e f g h i j k l m n o p q r s t u v w x y z</span></span></code></pre></div>
 <p>For an example of how this approach is used in a real project, look
 at how <a href="https://github.com/rstudio/vetiver-r/blob/main/R/pin-read-write.R">the
 vetiver package wraps these functions to write and read model binaries

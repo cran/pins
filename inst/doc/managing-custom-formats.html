@@ -359,9 +359,9 @@ and read with consistent metadata, see
 <code>vignette(&quot;customize-pins-metadata&quot;)</code>.</p>
 <p>We’ll begin with an example where we write and read uncompressed
 Arrow files, starting by creating a temporary board:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_temp</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_temp</span>()</span></code></pre></div>
 <div id="upload-a-single-file" class="section level2">
 <h2>Upload a single file</h2>
 <p>Two points to keep in mind:</p>
@@ -373,72 +373,72 @@ to local files.</li>
 </ul>
 <p>If you are writing a one-off file, you can do everything
 directly:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>pin_name <span class="ot">&lt;-</span> <span class="st">&quot;mtcars-arrow&quot;</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># file name will be `mtcars-arrow.arrow`</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>path <span class="ot">&lt;-</span> fs<span class="sc">::</span><span class="fu">path_temp</span>(fs<span class="sc">::</span><span class="fu">path_ext_set</span>(pin_name, <span class="st">&quot;arrow&quot;</span>))</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>arrow<span class="sc">::</span><span class="fu">write_feather</span>(mtcars, path, <span class="at">compression =</span> <span class="st">&quot;uncompressed&quot;</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">pin_upload</span>(board, <span class="at">paths =</span> path, <span class="at">name =</span> pin_name)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20230517T161737Z-e883b&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>pin_name <span class="ot">&lt;-</span> <span class="st">&quot;mtcars-arrow&quot;</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co"># file name will be `mtcars-arrow.arrow`</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>path <span class="ot">&lt;-</span> fs<span class="sc">::</span><span class="fu">path_temp</span>(fs<span class="sc">::</span><span class="fu">path_ext_set</span>(pin_name, <span class="st">&quot;arrow&quot;</span>))</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>arrow<span class="sc">::</span><span class="fu">write_feather</span>(mtcars, path, <span class="at">compression =</span> <span class="st">&quot;uncompressed&quot;</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="fu">pin_upload</span>(board, <span class="at">paths =</span> path, <span class="at">name =</span> pin_name)</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20230816T140741Z-e883b&#39;</span></span></code></pre></div>
 <p>Reading from the downloaded pin is straightforward;
 <code>pin_download()</code> returns a local path that can be piped to
 <code>arrow::read_feather()</code>:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>mtcars_download <span class="ot">&lt;-</span> </span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pin_download</span>(board, pin_name) <span class="sc">%&gt;%</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  arrow<span class="sc">::</span><span class="fu">read_feather</span>()</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(mtcars_download)</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    mpg cyl disp  hp drat    wt  qsec vs am gear carb</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 21.0   6  160 110 3.90 2.620 16.46  0  1    4    4</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 22.8   4  108  93 3.85 2.320 18.61  1  1    4    1</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 21.4   6  258 110 3.08 3.215 19.44  1  0    3    1</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 18.1   6  225 105 2.76 3.460 20.22  1  0    3    1</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>mtcars_download <span class="ot">&lt;-</span> </span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">pin_download</span>(board, pin_name) <span class="sc">%&gt;%</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  arrow<span class="sc">::</span><span class="fu">read_feather</span>()</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="fu">head</span>(mtcars_download)</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt;    mpg cyl disp  hp drat    wt  qsec vs am gear carb</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; 1 21.0   6  160 110 3.90 2.620 16.46  0  1    4    4</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; 2 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; 3 22.8   4  108  93 3.85 2.320 18.61  1  1    4    1</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt; 4 21.4   6  258 110 3.08 3.215 19.44  1  0    3    1</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; 5 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; 6 18.1   6  225 105 2.76 3.460 20.22  1  0    3    1</span></span></code></pre></div>
 </div>
 <div id="function-to-manage-uploading" class="section level2">
 <h2>Function to manage uploading</h2>
 <p>If you want to write more than one custom file of a certain type, or
 using a certain tool, you might consider writing a helper function:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>pin_upload_arrow <span class="ot">&lt;-</span> <span class="cf">function</span>(board, x, name, ...) {</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># path deleted when `pin_upload_arrow()` exits</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  path <span class="ot">&lt;-</span> fs<span class="sc">::</span><span class="fu">path_temp</span>(fs<span class="sc">::</span><span class="fu">path_ext_set</span>(name, <span class="st">&quot;arrow&quot;</span>))</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  withr<span class="sc">::</span><span class="fu">defer</span>(fs<span class="sc">::</span><span class="fu">file_delete</span>(path))</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># custom writer</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  arrow<span class="sc">::</span><span class="fu">write_feather</span>(x, path, <span class="at">compression =</span> <span class="st">&quot;uncompressed&quot;</span>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pin_upload</span>(board, <span class="at">paths =</span> path, <span class="at">name =</span> name, ...) </span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>pin_upload_arrow <span class="ot">&lt;-</span> <span class="cf">function</span>(board, x, name, ...) {</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  <span class="co"># path deleted when `pin_upload_arrow()` exits</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  path <span class="ot">&lt;-</span> fs<span class="sc">::</span><span class="fu">path_temp</span>(fs<span class="sc">::</span><span class="fu">path_ext_set</span>(name, <span class="st">&quot;arrow&quot;</span>))</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  withr<span class="sc">::</span><span class="fu">defer</span>(fs<span class="sc">::</span><span class="fu">file_delete</span>(path))</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  </span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="co"># custom writer</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  arrow<span class="sc">::</span><span class="fu">write_feather</span>(x, path, <span class="at">compression =</span> <span class="st">&quot;uncompressed&quot;</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>  </span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>  <span class="fu">pin_upload</span>(board, <span class="at">paths =</span> path, <span class="at">name =</span> name, ...) </span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>}</span></code></pre></div>
 <p>This helper function is designed to work like
 <code>pin_write()</code>:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pin_upload_arrow</span>(board, <span class="at">x =</span> mtcars, <span class="at">name =</span> <span class="st">&quot;mtcars-arrow2&quot;</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20230517T161737Z-e883b&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">pin_upload_arrow</span>(board, <span class="at">x =</span> mtcars, <span class="at">name =</span> <span class="st">&quot;mtcars-arrow2&quot;</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20230816T140741Z-e883b&#39;</span></span></code></pre></div>
 <p>As before, you can pipe the result of <code>pin_download()</code> to
 your reader function:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pin_download</span>(board, <span class="at">name =</span> <span class="st">&quot;mtcars-arrow2&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  arrow<span class="sc">::</span><span class="fu">read_feather</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>()</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    mpg cyl disp  hp drat    wt  qsec vs am gear carb</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 21.0   6  160 110 3.90 2.620 16.46  0  1    4    4</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 22.8   4  108  93 3.85 2.320 18.61  1  1    4    1</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 21.4   6  258 110 3.08 3.215 19.44  1  0    3    1</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 18.1   6  225 105 2.76 3.460 20.22  1  0    3    1</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">pin_download</span>(board, <span class="at">name =</span> <span class="st">&quot;mtcars-arrow2&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  arrow<span class="sc">::</span><span class="fu">read_feather</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="fu">head</span>()</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt;    mpg cyl disp  hp drat    wt  qsec vs am gear carb</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt; 1 21.0   6  160 110 3.90 2.620 16.46  0  1    4    4</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">#&gt; 2 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt; 3 22.8   4  108  93 3.85 2.320 18.61  1  1    4    1</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt; 4 21.4   6  258 110 3.08 3.215 19.44  1  0    3    1</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt; 5 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; 6 18.1   6  225 105 2.76 3.460 20.22  1  0    3    1</span></span></code></pre></div>
 </div>
 <div id="another-example-upload-a-zipped-directory-archive-as-a-pin" class="section level2">
 <h2>Another example: upload a zipped directory archive as a pin</h2>
 <p>If you want to use this same approach to <a href="https://archive.r-lib.org/">archive</a> and pin a whole directory,
 you can write a helper function like:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>pin_upload_archive <span class="ot">&lt;-</span> <span class="cf">function</span>(board, dir, name, ...) {</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  path <span class="ot">&lt;-</span> fs<span class="sc">::</span><span class="fu">path_temp</span>(fs<span class="sc">::</span><span class="fu">path_ext_set</span>(name, <span class="st">&quot;tar.gz&quot;</span>))</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  withr<span class="sc">::</span><span class="fu">defer</span>(fs<span class="sc">::</span><span class="fu">file_delete</span>(path))</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  archive<span class="sc">::</span><span class="fu">archive_write_dir</span>(path, dir)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pin_upload</span>(<span class="at">board =</span> board, <span class="at">paths =</span> path, <span class="at">name =</span> name, ...)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>pin_upload_archive <span class="ot">&lt;-</span> <span class="cf">function</span>(board, dir, name, ...) {</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  path <span class="ot">&lt;-</span> fs<span class="sc">::</span><span class="fu">path_temp</span>(fs<span class="sc">::</span><span class="fu">path_ext_set</span>(name, <span class="st">&quot;tar.gz&quot;</span>))</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  withr<span class="sc">::</span><span class="fu">defer</span>(fs<span class="sc">::</span><span class="fu">file_delete</span>(path))</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  archive<span class="sc">::</span><span class="fu">archive_write_dir</span>(path, dir)</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="fu">pin_upload</span>(<span class="at">board =</span> board, <span class="at">paths =</span> path, <span class="at">name =</span> name, ...)</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>}</span></code></pre></div>
 <p>You can download the compressed archive via
 <code>pin_download(board, name)</code> and then pipe that path straight
 to <code>archive::archive_extract()</code> to extract your archive in a

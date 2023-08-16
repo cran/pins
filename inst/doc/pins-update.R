@@ -47,7 +47,7 @@ board %>% pin_download("alphabet")
 
 ## -----------------------------------------------------------------------------
 # Legacy API
-base <- "https://raw.githubusercontent.com/rstudio/pins-r/master/tests/testthat/"
+base <- "https://raw.githubusercontent.com/rstudio/pins-r/main/tests/testthat/"
 
 (pin(paste0(base, "pin-files/first.txt"), board = "vignette"))
 
