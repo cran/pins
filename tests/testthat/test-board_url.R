@@ -1,4 +1,5 @@
 skip_if_not_installed("webfakes")
+skip_on_cran()
 
 httpbin <- local_httpbin_app()
 httpbin_port <- httpbin$get_port()
@@ -18,6 +19,8 @@ test_that("provides key methods", {
   board %>%
     pin_read("rds") %>%
     expect_equal(data.frame(x = 1:10))
+
+  expect_snapshot(board_deparse(board))
 })
 
 test_that("absent pins handled consistently", {
@@ -158,7 +161,6 @@ test_that("useful errors for unsupported methods", {
     board %>% pin_meta("x", version = "x")
     board %>% pin_versions("x")
     board %>% pin_version_delete("x")
-    board %>% board_deparse()
     pin(1:5, name = "x", board = board)
     pin_get(name = "x", board = board)
   })
