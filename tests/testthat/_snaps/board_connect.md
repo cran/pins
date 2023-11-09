@@ -5,18 +5,14 @@
     Output
       [1] "rsconnect"
 
-# metadata checking functions give correct errors
-
-    `tags` must be a character vector or `NULL`, not a list.
-
----
-
-    `metadata` must be a list or `NULL`, not a character vector.
-
 # get useful error for rebranding
 
-    `board_rsconnect()` was deprecated in pins 1.1.0.
-    i Please use `board_connect()` instead.
+    Code
+      board <- board_rsconnect()
+    Condition
+      Error:
+      ! `board_rsconnect()` was deprecated in pins 1.1.0 and is now defunct.
+      i Please use `board_connect()` instead.
 
 # can deparse
 
@@ -30,7 +26,7 @@
     Code
       rsc_content_find(board, "marjory/test-partial")
     Condition
-      Error in `rsc_content_find_live()`:
+      Error in `rsc_content_find()`:
       ! Can't find pin named 'test-partial' with owner 'marjory'
 
 # can create and delete content
@@ -47,7 +43,7 @@
     Code
       rsc_content_delete(board, "test-1")
     Condition
-      Error in `rsc_content_find_live()`:
+      Error in `rsc_content_find()`:
       ! Can't find pin called "test-1"
       i Use `pin_list()` to see all available pins in this board
 

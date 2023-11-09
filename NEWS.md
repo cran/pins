@@ -1,3 +1,16 @@
+# pins 1.3.0
+
+## Breaking changes
+
+* Changed the function signature of `pin_write()` so arguments like `type` and `title` must be passed by name and not position (#792).
+
+## Other improvements
+
+* Removed content and user caches for Connect altogether. Now, we look up 
+  usernames and content on the Connect server every time (#793).
+
+* Added new `urls` item to metadata for a pin (#795).
+
 # pins 1.2.2
 
 * Fixed how dots are checked in `pin_write()` to make user-facing messages more 
@@ -202,7 +215,7 @@ This version includes the following modern boards:
   `pin()`, but you can't `pin_get()` pins created by `pin_write()`.
   
 * `board_s3()` stores data in Amazon's S3 service. It is built on top of 
-  [paws](https://paws-r.github.io).
+  paws.
 
 * `board_url()` lets you create a manual board from a vector of URLs. This is 
   useful because `pin_download()` and `pin_read()` are cached, so they only 

@@ -25,8 +25,7 @@ board_rsconnect(
   cache = NULL,
   name = "posit-connect",
   versioned = TRUE,
-  use_cache_on_failure = is_interactive(),
-  versions = deprecated()
+  use_cache_on_failure = is_interactive()
 )
 }
 \arguments{
@@ -70,8 +69,6 @@ argument controls whether you use the cache for reading pins, but you can't
 create a board object unless you can connect to your Connect server.}
 
 \item{output_files}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} No longer supported.}
-
-\item{versions}{Should this board be registered with support for versions?}
 }
 \description{
 To use a Posit Connect board, you need to first authenticate. The easiest
@@ -102,14 +99,6 @@ board \%>\% pin_read("numbers")
 }\if{html}{\out{</div>}}
 
 You can find the URL of a pin with \code{\link[=pin_browse]{pin_browse()}}.
-}
-
-\section{Local caching for Posit Connect}{
-The pins package maintains local per-session caches for \emph{users} and \emph{content}
-from your Connect server. If your cache gets into a bad state (for example,
-user names have changed on the server or a pin was deleted on the server, but
-your local machine doesn't know about the change yet), you can clear your
-local cache by restarting your R session.
 }
 
 \examples{
