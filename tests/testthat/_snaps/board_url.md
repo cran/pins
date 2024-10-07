@@ -7,8 +7,9 @@
 
 # raw pins can only be downloaded
 
-    Pin does not declare file type so can't be automatically read
-    i Retrieve uploaded paths with `pin_download()`
+    Cannot automatically read pin:
+    * Is your pin specified as a full path? Retrieve it with `pin_download()`
+    * Is your pin specified via a URL that is not a full path, such as a Posit Connect vanity URL? Remember to include a trailing slash `/`
 
 # useful errors for unsupported methods
 
@@ -46,11 +47,17 @@
     Code
       pin(1:5, name = "x", board = board)
     Condition
+      Warning:
+      `pin()` was deprecated in pins 1.4.0.
+      i Please use `pin_write()` instead.
       Error in `board_pin_create()`:
       ! Use `pin_write()` with this board, not `pin()`
     Code
       pin_get(name = "x", board = board)
     Condition
+      Warning:
+      `pin_get()` was deprecated in pins 1.4.0.
+      i Please use `pin_read()` instead.
       Error in `board_pin_get()`:
       ! Use `pin_read()` with this board, not `pin_get()`
 

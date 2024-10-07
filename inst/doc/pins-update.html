@@ -49,7 +49,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -60,7 +60,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -340,28 +340,42 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<p>pins 1.0.0 introduced a completely new API. While the legacy API will
-continue to be supported for some time, it will not gain any new
-features, so it’s good to plan to switch to the new interface. This
-vignette shows a couple of examples of updating legacy code to the
-modern API, then provides a full set of equivalences between the legacy
-and modern function names.</p>
+<p>pins 1.0.0 introduced a completely new API and the old legacy API was
+deprecated in pins 1.4.0, so now is a good time to switch to the new
+interface. This vignette shows a couple of examples of updating legacy
+code to the modern API, then provides a full set of equivalences between
+the legacy and modern function names.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(pins)</span></code></pre></div>
 <div id="examples" class="section level2">
 <h2>Examples</h2>
 <p>A simple example of the legacy API looks something like this:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Legacy API</span></span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">board_register_local</span>(<span class="st">&quot;vignette&quot;</span>, <span class="fu">tempfile</span>())</span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="fu">pin</span>(<span class="fu">head</span>(mtcars), <span class="st">&quot;mtcars&quot;</span>, <span class="at">board =</span> <span class="st">&quot;vignette&quot;</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="fu">pin_get</span>(<span class="st">&quot;mtcars&quot;</span>, <span class="at">board =</span> <span class="st">&quot;vignette&quot;</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt;                    mpg cyl disp  hp drat    wt  qsec vs am gear carb</span></span>
-<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt; Mazda RX4         21.0   6  160 110 3.90 2.620 16.46  0  1    4    4</span></span>
-<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co">#&gt; Mazda RX4 Wag     21.0   6  160 110 3.90 2.875 17.02  0  1    4    4</span></span>
-<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; Datsun 710        22.8   4  108  93 3.85 2.320 18.61  1  1    4    1</span></span>
-<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co">#&gt; Hornet 4 Drive    21.4   6  258 110 3.08 3.215 19.44  1  0    3    1</span></span>
-<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co">#&gt; Hornet Sportabout 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2</span></span>
-<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co">#&gt; Valiant           18.1   6  225 105 2.76 3.460 20.22  1  0    3    1</span></span></code></pre></div>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#&gt; Warning: `board_register_local()` was deprecated in pins 1.4.0.</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt; ℹ Learn more at &lt;https://pins.rstudio.com/articles/pins-update.html&gt;</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; This warning is displayed once every 8 hours.</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt; Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt; generated.</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="fu">pin</span>(<span class="fu">head</span>(mtcars), <span class="st">&quot;mtcars&quot;</span>, <span class="at">board =</span> <span class="st">&quot;vignette&quot;</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co">#&gt; Warning: `pin()` was deprecated in pins 1.4.0.</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co">#&gt; ℹ Please use `pin_write()` instead.</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co">#&gt; This warning is displayed once every 8 hours.</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="co">#&gt; Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co">#&gt; generated.</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="fu">pin_get</span>(<span class="st">&quot;mtcars&quot;</span>, <span class="at">board =</span> <span class="st">&quot;vignette&quot;</span>)</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#&gt; Warning: `pin_get()` was deprecated in pins 1.4.0.</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt; ℹ Please use `pin_read()` instead.</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt; This warning is displayed once every 8 hours.</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#&gt; Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt; generated.</span></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a><span class="co">#&gt;                    mpg cyl disp  hp drat    wt  qsec vs am gear carb</span></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="co">#&gt; Mazda RX4         21.0   6  160 110 3.90 2.620 16.46  0  1    4    4</span></span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a><span class="co">#&gt; Mazda RX4 Wag     21.0   6  160 110 3.90 2.875 17.02  0  1    4    4</span></span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="co">#&gt; Datsun 710        22.8   4  108  93 3.85 2.320 18.61  1  1    4    1</span></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a><span class="co">#&gt; Hornet 4 Drive    21.4   6  258 110 3.08 3.215 19.44  1  0    3    1</span></span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="co">#&gt; Hornet Sportabout 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2</span></span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a><span class="co">#&gt; Valiant           18.1   6  225 105 2.76 3.460 20.22  1  0    3    1</span></span></code></pre></div>
 <p>To convert to the modern API you need to make two major changes:</p>
 <ul>
 <li>Instead of registering a named board, you create an explicit board
@@ -410,16 +424,16 @@ want to use the pipe:</p>
 <span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a></span>
 <span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="fu">pin</span>(path, <span class="st">&quot;alphabet&quot;</span>, <span class="at">board =</span> <span class="st">&quot;vignette&quot;</span>)</span>
 <span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="fu">pin_get</span>(<span class="st">&quot;alphabet&quot;</span>, <span class="at">board =</span> <span class="st">&quot;vignette&quot;</span>)</span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/var/folders/hv/hzsmmyk9393_m7q3nscx1slc0000gn/T/RtmpI8KZE3/file91af69268a94/alphabet/file91af4b396438&quot;</span></span></code></pre></div>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/var/folders/hv/hzsmmyk9393_m7q3nscx1slc0000gn/T/RtmpzMQjFB/file184982d4d3885/alphabet/file18498213615e2&quot;</span></span></code></pre></div>
 <p>pins 1.0.0 clearly separates the two cases of pin an object and
 pinning a file, so here instead of <code>pin_write()</code> and
 <code>pin_read()</code> you need to <code>pin_upload()</code> and
 <code>pin_download()</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Modern API</span></span>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_upload</span>(path, <span class="st">&quot;alphabet&quot;</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt; Replacing version &#39;20231109T143707Z-ee580&#39; with &#39;20231109T155348Z-ee580&#39;</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt; Replacing version &#39;20241007T030546Z-ee580&#39; with &#39;20241007T153436Z-ee580&#39;</span></span>
 <span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_download</span>(<span class="st">&quot;alphabet&quot;</span>)</span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;~/Library/Application Support/pins/alphabet/20231109T155348Z-ee580/file91af4b396438&quot;</span></span></code></pre></div>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;~/Library/Application Support/pins/alphabet/20241007T153436Z-ee580/file18498213615e2&quot;</span></span></code></pre></div>
 </div>
 <div id="pinning-a-url" class="section level3">
 <h3>Pinning a url</h3>
@@ -429,7 +443,7 @@ re-download it when it changes:</p>
 <span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>base <span class="ot">&lt;-</span> <span class="st">&quot;https://raw.githubusercontent.com/rstudio/pins-r/main/tests/testthat/&quot;</span></span>
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
 <span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>(<span class="fu">pin</span>(<span class="fu">paste0</span>(base, <span class="st">&quot;pin-files/first.txt&quot;</span>), <span class="at">board =</span> <span class="st">&quot;vignette&quot;</span>))</span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/var/folders/hv/hzsmmyk9393_m7q3nscx1slc0000gn/T/RtmpI8KZE3/file91af69268a94/first/first.txt&quot;</span></span></code></pre></div>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/var/folders/hv/hzsmmyk9393_m7q3nscx1slc0000gn/T/RtmpzMQjFB/file184982d4d3885/first/first.txt&quot;</span></span></code></pre></div>
 <p>This now needs to be made explicit with the new
 <code>board_url()</code>, and since this returns a path, not a file, you
 need to use <code>pin_download()</code>:</p>

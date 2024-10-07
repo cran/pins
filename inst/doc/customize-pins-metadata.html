@@ -49,7 +49,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -60,7 +60,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -386,7 +386,7 @@ we are interested in and writes it in a consistent way.</p>
 metadata:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>ten_letters <span class="ot">&lt;-</span> <span class="fu">factor</span>(<span class="fu">sample</span>(letters, <span class="at">size =</span> <span class="dv">10</span>), <span class="at">levels =</span> letters)</span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_write_factor_json</span>(ten_letters, <span class="st">&quot;letters-as-json&quot;</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20231109T155346Z-c3227&#39;</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20241007T153433Z-cb0c1&#39;</span></span>
 <span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; Writing to pin &#39;letters-as-json&#39;</span></span></code></pre></div>
 <div id="a-function-to-read-factors" class="section level2">
 <h2>A function to read factors</h2>
@@ -394,7 +394,7 @@ metadata:</p>
 <code>pin_read()</code> function, but the object we get is no longer a
 factor!</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_read</span>(<span class="st">&quot;letters-as-json&quot;</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;i&quot; &quot;a&quot; &quot;f&quot; &quot;m&quot; &quot;w&quot; &quot;j&quot; &quot;e&quot; &quot;g&quot; &quot;h&quot; &quot;k&quot;</span></span></code></pre></div>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;g&quot; &quot;c&quot; &quot;b&quot; &quot;i&quot; &quot;d&quot; &quot;k&quot; &quot;x&quot; &quot;y&quot; &quot;j&quot; &quot;h&quot;</span></span></code></pre></div>
 <p>Instead, we can also write a special function for reading, to
 reconstruct the factor including its levels:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>pin_read_factor_json <span class="ot">&lt;-</span> <span class="cf">function</span>(board, name, <span class="at">version =</span> <span class="cn">NULL</span>, <span class="at">hash =</span> <span class="cn">NULL</span>, ...) {</span>
@@ -404,7 +404,7 @@ reconstruct the factor including its levels:</p>
 <span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>}</span>
 <span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a></span>
 <span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_read_factor_json</span>(<span class="st">&quot;letters-as-json&quot;</span>)</span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt;  [1] i a f m w j e g h k</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt;  [1] g c b i d k x y j h</span></span>
 <span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; Levels: a b c d e f g h i j k l m n o p q r s t u v w x y z</span></span></code></pre></div>
 </div>
 <div id="examples-of-using-consistent-metadata" class="section level2">

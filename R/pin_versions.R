@@ -32,7 +32,7 @@
 #' board %>% pin_versions_prune("df", days = 30)
 #' @export
 pin_versions <- function(board, name, ...) {
-  ellipsis::check_dots_used()
+  check_dots_used()
 
   if (missing(name) && is.board(board)) {
     abort("Argument `name` is missing, with no default")
@@ -73,7 +73,7 @@ pin_versions.pins_board <- function(board, name, ...) {
 #' @rdname pin_versions
 #' @param version Version identifier.
 pin_version_delete <- function(board, name, version, ...) {
-  ellipsis::check_dots_used()
+  check_dots_used()
   UseMethod("pin_version_delete")
 }
 
@@ -157,19 +157,23 @@ version_from_path <- function(x) {
 }
 
 version_setup <- function(board, name, new_version, versioned = NULL, call = caller_env()) {
+  
+  n_versions <- 0
+  
   if (pin_exists(board, name)) {
     versions <- pin_versions(board, name)
-    old_version <- versions$version[[1]]
     n_versions <- nrow(versions)
-    if (old_version == new_version) {
-      cli::cli_abort(c(
-        "The new version {.val {new_version}} is the same as the most recent version.",
-        i = "Did you try to create a new version with the same timestamp as the last version?"
-      ),
-      call = call)
+    
+    if (n_versions > 0) {
+      old_version <- versions$version[[1]]
+      if (old_version == new_version) {
+        cli::cli_abort(c(
+          "The new version {.val {new_version}} is the same as the most recent version.",
+          i = "Did you try to create a new version with the same timestamp as the last version?"
+        ),
+        call = call)
+      }
     }
-  } else {
-    n_versions <- 0
   }
 
   versioned <- versioned %||% if (n_versions > 1) TRUE else board$versioned

@@ -72,8 +72,8 @@ create a board object unless you can connect to your Connect server.}
 }
 \description{
 To use a Posit Connect board, you need to first authenticate. The easiest
-way to do so is by launching \strong{Tools} - \strong{Global Options} -
-\strong{Publishing} - \strong{Connect}, and follow the instructions.
+way to do so is using the RStudio IDE and choosing \strong{Tools} - \strong{Global Options} -
+\strong{Publishing} - \strong{Connect}, then following the instructions.
 
 You can share pins with others in Posit Connect by changing the viewers
 of the document to specific users or groups. This is accomplished by opening
@@ -93,7 +93,7 @@ setting the access type to \code{all}:
 Now anyone can read your pin through \code{\link[=board_url]{board_url()}}:
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{board <- board_url(c(
-  numbers = "https://colorado.posit.co/rsc/great-numbers/"
+  numbers = "https://pub.current.posit.team/public/great-numbers/"
 ))
 board \%>\% pin_read("numbers")
 }\if{html}{\out{</div>}}

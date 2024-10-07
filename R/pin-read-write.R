@@ -38,7 +38,7 @@
 #' # (Normally you'd specify the version with a string, but since the
 #' # version includes the date-time I can't do that in an example)
 pin_read <- function(board, name, version = NULL, hash = NULL, ...) {
-  ellipsis::check_dots_used()
+  check_dots_used()
   check_board(board, "pin_read", "pin_get")
 
   meta <- pin_fetch(board, name, version = version, ...)
@@ -134,7 +134,7 @@ pin_write <- function(board, x,
     }
   }
 
-  ellipsis::check_dots_used()
+  check_dots_used()
   name <- pin_store(board, name, path, meta, versioned = versioned, x = x, ...)
   pins_inform("Writing to pin '{name}'")
   invisible(name)
@@ -194,8 +194,8 @@ write_qs <- function(x, path) {
 }
 
 write_parquet <- function(x, path) {
-  check_installed("arrow")
-  arrow::write_parquet(x, path)
+  check_installed("nanoparquet")
+  nanoparquet::write_parquet(x, path)
   invisible(path)
 }
 
@@ -226,9 +226,10 @@ object_read <- function(meta) {
       joblib = abort("'joblib' pins not supported in R"),
       csv = utils::read.csv(path),
       qs = read_qs(path),
-      file = abort(c(
-        "Pin does not declare file type so can't be automatically read",
-        i = "Retrieve uploaded paths with `pin_download()`"
+      file = cli_abort(c(
+        "Cannot automatically read pin:",
+        "*" = "Is your pin specified as a full path? Retrieve it with {.code pin_download()}",
+        "*" = "Is your pin specified via a URL that is {.emph not} a full path, such as a Posit Connect vanity URL? Remember to include a trailing slash {.code /}"
       ))
     )
   } else {
@@ -250,8 +251,8 @@ read_qs <- function(path) {
 }
 
 read_parquet <- function(path) {
-  check_installed("arrow")
-  arrow::read_parquet(path)
+  check_installed("nanoparquet")
+  nanoparquet::read_parquet(path)
 }
 
 read_arrow <- function(path) {

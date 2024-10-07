@@ -2,8 +2,8 @@
 #'
 #' @description
 #' To use a Posit Connect board, you need to first authenticate. The easiest
-#' way to do so is by launching **Tools** - **Global Options** -
-#' **Publishing** - **Connect**, and follow the instructions.
+#' way to do so is using the RStudio IDE and choosing **Tools** - **Global Options** -
+#' **Publishing** - **Connect**, then following the instructions.
 #'
 #' You can share pins with others in Posit Connect by changing the viewers
 #' of the document to specific users or groups. This is accomplished by opening
@@ -26,7 +26,7 @@
 #'
 #' ```r
 #' board <- board_url(c(
-#'   numbers = "https://colorado.posit.co/rsc/great-numbers/"
+#'   numbers = "https://pub.current.posit.team/public/great-numbers/"
 #' ))
 #' board %>% pin_read("numbers")
 #' ```
@@ -364,7 +364,7 @@ board_deparse.pins_board_connect <- function(board, ...) {
 #' @rdname required_pkgs.pins_board
 #' @export
 required_pkgs.pins_board_connect <- function(x, ...) {
-  ellipsis::check_dots_empty()
+  check_dots_empty()
   "rsconnect"
 }
 
@@ -453,9 +453,12 @@ rsc_content_find <- function(board, name, version = NULL, warn = TRUE) {
     owner_guids <- map_chr(json, ~ .x$owner_guid)
     owner_names <- map_chr(owner_guids, rsc_user_name, board = board)
     if (!name$owner %in% owner_names) {
-      abort(paste0("Can't find pin named '", name$name, "' with owner '", name$owner, "'"))
+      cli_abort(
+        "Can't find pin with name {.val {name$name}} and owner {.val {name$owner}}",
+        class = "pins_pin_missing"
+      )
     }
-    selected <- json[[name$owner %in% owner_names]]
+    selected <- json[[which(name$owner == owner_names)]]
   }
 
   content <- list(
@@ -698,24 +701,24 @@ rsc_v1 <- function(...) {
 # Testing setup -----------------------------------------------------------
 
 board_connect_test <- function(...) {
-  if (connect_has_colorado()) {
-    board_connect_colorado(...)
+  if (connect_has_ptd()) {
+    board_connect_ptd(...)
   } else {
     board_connect_susan(...)
   }
 }
 
-# Use Colorado for local testing
-connect_has_colorado <- function() {
+# Use demo.posit.team PTD for local testing
+connect_has_ptd <- function() {
   accounts <- rsconnect::accounts()
-  "colorado.posit.co" %in% accounts$server
+  "pub.demo.posit.team" %in% accounts$server
 }
 
-board_connect_colorado <- function(...) {
-  if (!connect_has_colorado()) {
-    testthat::skip("board_connect_colorado() only works with Posit's demo server")
+board_connect_ptd <- function(...) {
+  if (!connect_has_ptd()) {
+    testthat::skip("board_connect_ptd() only works with Posit's demo PTD server")
   }
-  board_connect(..., server = "colorado.posit.co", auth = "rsconnect", cache = fs::file_temp())
+  board_connect(..., server = "pub.demo.posit.team", auth = "rsconnect", cache = fs::file_temp())
 }
 
 board_connect_susan <- function(...) {

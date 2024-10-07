@@ -49,7 +49,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -60,7 +60,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -378,7 +378,7 @@ or GitHub repo, or perhaps <code>board_s3()</code>.</p>
 file:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_write</span>(mtcars, <span class="at">type =</span> <span class="st">&quot;json&quot;</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">#&gt; Using `name = &#39;mtcars&#39;`</span></span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20231109T155351Z-c4fcd&#39;</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20241007T153439Z-c4fcd&#39;</span></span>
 <span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt; Writing to pin &#39;mtcars&#39;</span></span></code></pre></div>
 <p>Let’s make a new version of this data by adding a column:
 <code>lper100km</code>, consumption in liters per 100 km. This could
@@ -387,7 +387,7 @@ make our data friendlier to folks outside the United States.</p>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>mtcars_metric<span class="sc">$</span>lper100km <span class="ot">&lt;-</span> <span class="fl">235.215</span> <span class="sc">/</span> mtcars<span class="sc">$</span>mpg</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
 <span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_write</span>(mtcars_metric, <span class="at">name =</span> <span class="st">&quot;mtcars&quot;</span>, <span class="at">type =</span> <span class="st">&quot;json&quot;</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20231109T155354Z-19d36&#39;</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20241007T153441Z-19d36&#39;</span></span>
 <span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; Writing to pin &#39;mtcars&#39;</span></span></code></pre></div>
 <p>Let’s check our board to ensure we have one pin named
 <code>&quot;mtcars&quot;</code>, with two versions:</p>
@@ -398,8 +398,8 @@ make our data friendlier to folks outside the United States.</p>
 <span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 3</span></span>
 <span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt;   version                created             hash </span></span>
 <span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;                  &lt;dttm&gt;              &lt;chr&gt;</span></span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt; 1 20231109T155351Z-c4fcd 2023-11-09 08:53:51 c4fcd</span></span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; 2 20231109T155354Z-19d36 2023-11-09 08:53:54 19d36</span></span></code></pre></div>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt; 1 20241007T153439Z-c4fcd 2024-10-07 09:34:39 c4fcd</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; 2 20241007T153441Z-19d36 2024-10-07 09:34:41 19d36</span></span></code></pre></div>
 <p>Because a <code>board_url()</code> is consumed over the web, it
 doesn’t have access to a file system the way, for example, a
 <code>board_folder()</code> has; we can work around this by creating a
@@ -422,8 +422,8 @@ date.</p>
 <p>We can inspect its contents to see each pin in the board, and each
 version of each pin:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">mtcars</span><span class="kw">:</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="kw">-</span><span class="at"> mtcars/20231109T155351Z-c4fcd/</span></span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="kw">-</span><span class="at"> mtcars/20231109T155354Z-19d36/</span></span></code></pre></div>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="kw">-</span><span class="at"> mtcars/20241007T153439Z-c4fcd/</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="kw">-</span><span class="at"> mtcars/20241007T153441Z-19d36/</span></span></code></pre></div>
 <p>At this point, we would publish the folder containing the board as a
 part of a web site. Let’s pretend that we have served the folder from
 our fake website, <code>https://not.real.website.co/pins/</code>.</p>
@@ -444,8 +444,8 @@ discover the pins and versions:</p>
 <span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 3</span></span>
 <span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt;   version                created             hash </span></span>
 <span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;                  &lt;dttm&gt;              &lt;chr&gt;</span></span>
-<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; 1 20231109T155351Z-c4fcd 2023-11-09 08:53:51 c4fcd</span></span>
-<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; 2 20231109T155354Z-19d36 2023-11-09 08:53:54 19d36</span></span></code></pre></div>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; 1 20241007T153439Z-c4fcd 2024-10-07 09:34:39 c4fcd</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; 2 20241007T153441Z-19d36 2024-10-07 09:34:41 19d36</span></span></code></pre></div>
 <p>We can read the most-recent version of the <code>&quot;mtcars&quot;</code>
 pin:</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>web_board <span class="sc">%&gt;%</span> <span class="fu">pin_read</span>(<span class="st">&quot;mtcars&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span>

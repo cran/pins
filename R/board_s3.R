@@ -46,7 +46,8 @@
 #' * Some functions like [pin_list()] will work for an S3 board, but don't
 #'   return useful output.
 #' * You can pass arguments for [paws.storage::s3_put_object] such as `Tagging`
-#'   and `ServerSideEncryption` through the dots of `pin_write()`.
+#'   and `ServerSideEncryption` through the dots of `pin_write()`. (Note that
+#'   these are separate from [pin_write()] arguments like `tags`.)
 #' * `board_s3()` is powered by the paws.storage package, which is a
 #'   suggested dependency of pins (not required for pins in general). If
 #'   you run into errors when deploying content to a server like
@@ -80,7 +81,7 @@
 #' board_marketing <- board_s3("company-pins", prefix = "marketing/")
 #' # You can make the hierarchy arbitrarily deep.
 #'
-#' # Pass arguments like `Tagging` through the dots of `pin_write`:
+#' # Pass S3 arguments like `Tagging` through the dots of `pin_write`:
 #' board %>% pin_write(mtcars, Tagging = "key1=value1&key2=value2")
 #'
 #' }
@@ -247,7 +248,7 @@ pin_fetch.pins_board_s3 <- function(board, name, version = NULL, ...) {
 #' @export
 pin_store.pins_board_s3 <- function(board, name, paths, metadata,
                                     versioned = NULL, x = NULL, ...) {
-  ellipsis::check_dots_used()
+  check_dots_used()
   check_pin_name(name)
   version <- version_setup(board, name, version_name(metadata), versioned = versioned)
 
@@ -288,7 +289,7 @@ write_board_manifest_yaml.pins_board_s3 <- function(board, manifest, ...) {
 #' @rdname required_pkgs.pins_board
 #' @export
 required_pkgs.pins_board_s3 <- function(x, ...) {
-  ellipsis::check_dots_empty()
+  check_dots_empty()
   "paws.storage"
 }
 
@@ -319,7 +320,7 @@ s3_upload_yaml <- function(board, key, yaml, ...) {
 }
 
 s3_upload_file <- function(board, key, path, ...) {
-  ellipsis::check_dots_used()
+  check_dots_used()
   body <- readBin(path, "raw", file.size(path))
   board$svc$put_object(
     Bucket = board$bucket,

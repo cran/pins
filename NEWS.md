@@ -1,3 +1,25 @@
+# pins 1.4.0
+
+## Lifecycle changes
+
+* Changed the function signature of `pin_upload()` to be consistent with `pin_write()` i.e. arguments like `tags` must be passed by name and not position (#809).
+
+* Started gradual deprecation process for legacy pins functions such as `pin()` (#844).
+
+## Other improvements
+
+* Added example Python code to pin previews for Posit Connect (#806).
+
+* Fixed a bug in how pins with the same name but different owners on Posit Connect were identified (#808).
+
+* Fixed a bug in handling folders with duplicate names for Google Drive (#819, @UchidaMizuki).
+
+* Fixed how previously deleted pin versions are detected (#838, @MichalLauer).
+
+* Added new board for Databricks Volumes `board_databricks()` (#839, @edgararuiz).
+
+* Switched writing with `type = "parquet"` to use the nanoparquet package (#843).
+
 # pins 1.3.0
 
 ## Breaking changes
