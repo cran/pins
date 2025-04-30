@@ -28,37 +28,37 @@ bbc_news <- tibble::tibble(
 bbc_news
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  board <- board_connect()
-#  board %>% pin_write(bbc_news)
+# board <- board_connect()
+# board %>% pin_write(bbc_news)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  board <- board_connect()
-#  board %>% pin_read("your_name/bbc_news")
+# board <- board_connect()
+# board %>% pin_read("your_name/bbc_news")
 
 ## ----echo = FALSE, comment = ""-----------------------------------------------
 cat(readLines("connect-automate.txt"), sep = "\n")
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  library(shiny)
-#  library(pins)
-#  
-#  board <- board_connect()
-#  
-#  ui <- fluidPage(
-#    titlePanel("News from the BBC"),
-#    htmlOutput("news")
-#  )
-#  
-#  server <- function(input, output, session) {
-#    news <- board %>% pin_reactive_read("hadley/bbc_news")
-#  
-#    output$news <- renderUI({
-#      title <- htmltools::htmlEscape(news()$title)
-#      links <- paste0("<a href='", news()$url, "'>", title, "</a>")
-#      bullets <- paste0("  <li>", links, "</li>", collapse = "\n")
-#      HTML(paste0("<ul>", bullets, "</ul>"))
-#    })
-#  }
-#  
-#  shinyApp(ui, server)
+# library(shiny)
+# library(pins)
+# 
+# board <- board_connect()
+# 
+# ui <- fluidPage(
+#   titlePanel("News from the BBC"),
+#   htmlOutput("news")
+# )
+# 
+# server <- function(input, output, session) {
+#   news <- board %>% pin_reactive_read("hadley/bbc_news")
+# 
+#   output$news <- renderUI({
+#     title <- htmltools::htmlEscape(news()$title)
+#     links <- paste0("<a href='", news()$url, "'>", title, "</a>")
+#     bullets <- paste0("  <li>", links, "</li>", collapse = "\n")
+#     HTML(paste0("<ul>", bullets, "</ul>"))
+#   })
+# }
+# 
+# shinyApp(ui, server)
 

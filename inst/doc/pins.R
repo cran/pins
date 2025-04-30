@@ -15,10 +15,10 @@ library(pins)
 board <- board_temp()
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  board <- board_local() # share data across R sessions on the same computer
-#  board <- board_folder("~/Dropbox") # share data with others using dropbox
-#  board <- board_folder("Z:\\my-team\pins") # share data using a shared network drive
-#  board <- board_connect() # share data with Posit Connect
+# board <- board_local() # share data across R sessions on the same computer
+# board <- board_folder("~/Dropbox") # share data with others using dropbox
+# board <- board_folder("Z:\\my-team\pins") # share data using a shared network drive
+# board <- board_connect() # share data with Posit Connect
 
 ## -----------------------------------------------------------------------------
 mtcars <- tibble::as_tibble(mtcars)
@@ -43,11 +43,11 @@ board %>% pin_write(mtcars,
 board %>% pin_meta("mtcars")
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  board2 <- board_temp(versioned = TRUE)
+# board2 <- board_temp(versioned = TRUE)
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  board2 <- board_temp()
-#  board2 %>% pin_write(mtcars, versioned = TRUE)
+# board2 <- board_temp()
+# board2 %>% pin_write(mtcars, versioned = TRUE)
 
 ## -----------------------------------------------------------------------------
 board2 <- board_temp(versioned = TRUE)
@@ -63,7 +63,7 @@ board2 %>% pin_versions("x")
 board2 %>% pin_read("x")
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  board2 %>% pin_read("x", version = "20210520T173110Z-49519")
+# board2 %>% pin_read("x", version = "20210520T173110Z-49519")
 
 ## -----------------------------------------------------------------------------
 paths <- file.path(tempdir(), c("mtcars.csv", "alphabet.txt"))
@@ -77,7 +77,9 @@ board %>% pin_upload(paths, "example")
 board %>% pin_download("example")
 
 ## ----error = TRUE-------------------------------------------------------------
+try({
 board %>% pin_read("example")
+})
 
 ## -----------------------------------------------------------------------------
 board %>% pin_download("mtcars")

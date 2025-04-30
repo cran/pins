@@ -41,7 +41,7 @@ board_process <- webfakes::new_app_process(board_server)
 web_board <- board_url(board_process$url())
 
 ## -----------------------------------------------------------------------------
-#  web_board <- board_url("https://not.real.website.co/pins/")
+# web_board <- board_url("https://not.real.website.co/pins/")
 
 ## -----------------------------------------------------------------------------
 web_board %>% pin_list()
@@ -56,8 +56,8 @@ web_board %>% pin_read("mtcars") %>% head()
 web_board %>% pin_read("mtcars", version = versions$version[[1]]) %>% head()
 
 ## -----------------------------------------------------------------------------
-#  board <- board_url("https://user-name.github.io/repo-name/pins-board/")
+# board <- board_url("https://user-name.github.io/repo-name/pins-board/")
 
 ## -----------------------------------------------------------------------------
-#  board <- board_url("https://your-existing-bucket.s3.us-west-2.amazonaws.com/")
+# board <- board_url("https://your-existing-bucket.s3.us-west-2.amazonaws.com/")
 
