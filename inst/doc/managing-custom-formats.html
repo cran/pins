@@ -381,12 +381,12 @@ directly:</p>
 <span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>arrow<span class="sc">::</span><span class="fu">write_feather</span>(mtcars, path, <span class="at">compression =</span> <span class="st">&quot;uncompressed&quot;</span>)</span>
 <span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a></span>
 <span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="fu">pin_upload</span>(board, <span class="at">paths =</span> path, <span class="at">name =</span> pin_name)</span>
-<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20250430T014001Z-0e462&#39;</span></span></code></pre></div>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20260309T132659Z-b1934&#39;</span></span></code></pre></div>
 <p>Reading from the downloaded pin is straightforward;
 <code>pin_download()</code> returns a local path that can be piped to
 <code>arrow::read_feather()</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>mtcars_download <span class="ot">&lt;-</span> </span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">pin_download</span>(board, pin_name) <span class="sc">%&gt;%</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">pin_download</span>(board, pin_name) <span class="sc">|&gt;</span></span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  arrow<span class="sc">::</span><span class="fu">read_feather</span>()</span>
 <span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a></span>
 <span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="fu">head</span>(mtcars_download)</span>
@@ -417,11 +417,11 @@ using a certain tool, you might consider writing a helper function:</p>
 <p>This helper function is designed to work like
 <code>pin_write()</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">pin_upload_arrow</span>(board, <span class="at">x =</span> mtcars, <span class="at">name =</span> <span class="st">&quot;mtcars-arrow2&quot;</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20250430T014001Z-0e462&#39;</span></span></code></pre></div>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">#&gt; Creating new version &#39;20260309T132700Z-b1934&#39;</span></span></code></pre></div>
 <p>As before, you can pipe the result of <code>pin_download()</code> to
 your reader function:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">pin_download</span>(board, <span class="at">name =</span> <span class="st">&quot;mtcars-arrow2&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  arrow<span class="sc">::</span><span class="fu">read_feather</span>() <span class="sc">%&gt;%</span></span>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">pin_download</span>(board, <span class="at">name =</span> <span class="st">&quot;mtcars-arrow2&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  arrow<span class="sc">::</span><span class="fu">read_feather</span>() <span class="sc">|&gt;</span></span>
 <span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="fu">head</span>()</span>
 <span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 11</span></span>
 <span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt;     mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb</span></span>

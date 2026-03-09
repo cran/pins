@@ -35,8 +35,8 @@
 #' @examples
 #' \dontrun{
 #' board <- board_gcs("pins-testing")
-#' board %>% pin_write(mtcars)
-#' board %>% pin_read("mtcars")
+#' board |> pin_write(mtcars)
+#' board |> pin_read("mtcars")
 #'
 #' # A prefix allows you to have multiple independent boards in the same pin.
 #' board_sales <- board_gcs("company-pins", prefix = "sales/")
@@ -44,13 +44,9 @@
 #' # You can make the hierarchy arbitrarily deep.
 #'
 #' # Pass arguments like `predefinedAcl` through the dots of `pin_write`:
-#' board %>% pin_write(mtcars, predefinedAcl = "publicRead")
+#' board |> pin_write(mtcars, predefinedAcl = "publicRead")
 #' }
-board_gcs <- function(bucket,
-                      prefix = NULL,
-                      versioned = TRUE,
-                      cache = NULL) {
-
+board_gcs <- function(bucket, prefix = NULL, versioned = TRUE, cache = NULL) {
   check_installed("googleCloudStorageR")
 
   # Check that have access to the bucket
@@ -68,14 +64,21 @@ board_gcs <- function(bucket,
 }
 
 board_gcs_test <- function(...) {
-
   skip_if_missing_envvars(
     tests = "board_gcs()",
     envvars = c("PINS_GCS_PASSWORD")
   )
 
-  path_to_encrypted_json <- fs::path_package("pins", "secret", "pins-gcs-testing.json")
-  raw <- readBin(path_to_encrypted_json, "raw", file.size(path_to_encrypted_json))
+  path_to_encrypted_json <- fs::path_package(
+    "pins",
+    "secret",
+    "pins-gcs-testing.json"
+  )
+  raw <- readBin(
+    path_to_encrypted_json,
+    "raw",
+    file.size(path_to_encrypted_json)
+  )
   pw <- Sys.getenv("PINS_GCS_PASSWORD", "")
   json <- sodium::data_decrypt(
     bin = raw,
@@ -94,7 +97,26 @@ secret_nonce <- function() {
 
 #' @export
 pin_list.pins_board_gcs <- function(board, ...) {
-  NA
+  resp <- googleCloudStorageR::gcs_list_objects(
+    bucket = board$bucket,
+    prefix = board$prefix
+  )
+
+  if (nrow(resp) == 0) {
+    return(character(0))
+  }
+
+  # Strip prefix and extract pin names (first path component)
+  paths <- strip_prefix(resp$name, board$prefix)
+
+  # Extract first component from each path
+  pin_names <- vapply(
+    fs::path_split(paths),
+    function(components) if (length(components) > 0) components[[1L]] else "",
+    character(1)
+  )
+
+  unique(sort(pin_names[pin_names != ""]))
 }
 
 #' @export
@@ -165,12 +187,24 @@ pin_fetch.pins_board_gcs <- function(board, name, version = NULL, ...) {
 }
 
 #' @export
-pin_store.pins_board_gcs <- function(board, name, paths, metadata,
-                                     versioned = NULL, x = NULL, ...) {
+pin_store.pins_board_gcs <- function(
+  board,
+  name,
+  paths,
+  metadata,
+  versioned = NULL,
+  x = NULL,
+  ...
+) {
   withr::local_options(list(googleAuthR.verbose = 4))
   check_dots_used()
   check_pin_name(name)
-  version <- version_setup(board, name, version_name(metadata), versioned = versioned)
+  version <- version_setup(
+    board,
+    name,
+    version_name(metadata),
+    versioned = versioned
+  )
   version_dir <- fs::path(name, version)
   gcs_upload_yaml(
     board,
@@ -254,4 +288,14 @@ gcs_file_exists <- function(board, name) {
     prefix = paste0(board$prefix, name)
   )
   nrow(resp) > 0
+}
+
+strip_prefix <- function(x, prefix) {
+  if (is.null(prefix)) {
+    return(x)
+  }
+
+  to_strip <- startsWith(x, prefix)
+  x[to_strip] <- substr(x[to_strip], nchar(prefix) + 1, nchar(x[to_strip]))
+  x
 }

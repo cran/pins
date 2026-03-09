@@ -5,7 +5,7 @@
 \alias{pin_write}
 \title{Read and write objects to and from a board}
 \usage{
-pin_read(board, name, version = NULL, hash = NULL, ...)
+pin_read(board, name, version = NULL, hash = NULL, type = NULL, ...)
 
 pin_write(
   board,
@@ -35,15 +35,16 @@ find out which versions are available and when they were created.}
 you expect. You can find the hash of an existing pin by looking for
 \code{pin_hash} in \code{\link[=pin_meta]{pin_meta()}}.}
 
+\item{type}{File types used to save \code{x} to disk. Supports a single type or a
+vector of types (to pin in more than one format. Each type must be one of
+"csv", "json", "rds", "parquet", "arrow", or "qs2". If not supplied,
+will use JSON for bare lists and RDS for everything else. Be aware that CSV
+and JSON are plain text formats, while RDS, Parquet, Arrow, and
+\href{https://CRAN.R-project.org/package=qs2}{qs2} are binary formats.}
+
 \item{...}{Additional arguments passed on to methods for a specific board.}
 
 \item{x}{An object (typically a data frame) to pin.}
-
-\item{type}{File type used to save \code{x} to disk. Must be one of
-"csv", "json", "rds", "parquet", "arrow", or "qs". If not supplied, will
-use JSON for bare lists and RDS for everything else. Be aware that CSV and
-JSON are plain text formats, while RDS, Parquet, Arrow, and
-\href{https://CRAN.R-project.org/package=qs}{qs} are binary formats.}
 
 \item{title}{A title for the pin; most important for shared boards so that
 others can understand what the pin contains. If omitted, a brief
@@ -84,19 +85,25 @@ if you want to perform the serialisation yourself and work just with files.
 \examples{
 b <- board_temp(versioned = TRUE)
 
-b \%>\% pin_write(1:10, "x", description = "10 numbers")
+b |> pin_write(1:10, "x", description = "10 numbers")
 b
 
-b \%>\% pin_meta("x")
-b \%>\% pin_read("x")
+b |> pin_meta("x")
+b |> pin_read("x")
 
 # Add a new version
-b \%>\% pin_write(2:11, "x")
-b \%>\% pin_read("x")
+b |> pin_write(2:11, "x")
+b |> pin_read("x")
 
 # Retrieve an older version
-b \%>\% pin_versions("x")
-b \%>\% pin_read("x", version = .Last.value$version[[1]])
+b |> pin_versions("x")
+b |> pin_read("x", version = .Last.value$version[[1]])
 # (Normally you'd specify the version with a string, but since the
 # version includes the date-time I can't do that in an example)
+
+ # Pin with multiple types
+ b |> pin_write(1:10, "y", type = c("rds", "json"))
+ b |> pin_read("y", type = "json")
+ # Automatically chooses one of the available types
+ b |> pin_read("y")
 }

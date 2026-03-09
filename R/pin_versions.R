@@ -6,7 +6,7 @@
 #' * `pin_version_delete()` deletes a single version.
 #'
 #' @param board,name A pair of board and pin name. For modern boards,
-#'   use `board %>% pin_versions(name)`. For backward compatibility with the
+#'   use `board |> pin_versions(name)`. For backward compatibility with the
 #'   legacy API, you can also use `pin_versions(name)` or
 #'   `pin_version(name, board)`.
 #' @param ... Additional arguments passed on to methods for a specific board.
@@ -15,21 +15,21 @@
 #' @examples
 #' board <- board_temp(versioned = TRUE)
 #'
-#' board %>% pin_write(data.frame(x = 1:5), name = "df")
-#' board %>% pin_write(data.frame(x = 2:6), name = "df")
-#' board %>% pin_write(data.frame(x = 3:7), name = "df")
+#' board |> pin_write(data.frame(x = 1:5), name = "df")
+#' board |> pin_write(data.frame(x = 2:6), name = "df")
+#' board |> pin_write(data.frame(x = 3:7), name = "df")
 #'
 #' # pin_read() returns the latest version by default
-#' board %>% pin_read("df")
+#' board |> pin_read("df")
 #'
 #' # but you can return earlier versions if needed
-#' board %>% pin_versions("df")
+#' board |> pin_versions("df")
 #'
 #' ver <- pin_versions(board, "df")$version[[1]]
-#' board %>% pin_read("df", version = ver)
+#' board |> pin_read("df", version = ver)
 #'
 #' # delete all versions created more than 30 days ago
-#' board %>% pin_versions_prune("df", days = 30)
+#' board |> pin_versions_prune("df", days = 30)
 #' @export
 pin_versions <- function(board, name, ...) {
   check_dots_used()
@@ -95,14 +95,16 @@ pin_versions_prune <- function(board, name, n = NULL, days = NULL, ...) {
   if (!all(keep)) {
     to_delete <- versions$version[!keep]
 
-    pins_inform(paste0("Deleting versions: ", paste0(to_delete, collapse = ", ")))
+    pins_inform(paste0(
+      "Deleting versions: ",
+      paste0(to_delete, collapse = ", ")
+    ))
     for (version in to_delete) {
       pin_version_delete(board, name, version, ...)
     }
   } else {
     pins_inform("No old versions to delete")
   }
-
 }
 
 versions_keep <- function(created, n = NULL, days = NULL) {
@@ -156,22 +158,29 @@ version_from_path <- function(x) {
   out
 }
 
-version_setup <- function(board, name, new_version, versioned = NULL, call = caller_env()) {
-  
+version_setup <- function(
+  board,
+  name,
+  new_version,
+  versioned = NULL,
+  call = caller_env()
+) {
   n_versions <- 0
-  
+
   if (pin_exists(board, name)) {
     versions <- pin_versions(board, name)
     n_versions <- nrow(versions)
-    
+
     if (n_versions > 0) {
       old_version <- versions$version[[1]]
       if (old_version == new_version) {
-        cli::cli_abort(c(
-          "The new version {.val {new_version}} is the same as the most recent version.",
-          i = "Did you try to create a new version with the same timestamp as the last version?"
-        ),
-        call = call)
+        cli::cli_abort(
+          c(
+            "The new version {.val {new_version}} is the same as the most recent version.",
+            i = "Did you try to create a new version with the same timestamp as the last version?"
+          ),
+          call = call
+        )
       }
     }
   }

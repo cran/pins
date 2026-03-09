@@ -361,12 +361,12 @@ a tidy dataset:</p>
 <span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  xml <span class="ot">&lt;-</span> <span class="fu">read_xml</span>(<span class="st">&quot;bbc-news.xml&quot;</span>)  </span>
 <span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>}</span>
 <span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a></span>
-<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>items <span class="ot">&lt;-</span> xml <span class="sc">%&gt;%</span> <span class="fu">xml_find_all</span>(<span class="st">&quot;//item&quot;</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>items <span class="ot">&lt;-</span> xml <span class="sc">|&gt;</span> <span class="fu">xml_find_all</span>(<span class="st">&quot;//item&quot;</span>)</span>
 <span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a></span>
 <span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>bbc_news <span class="ot">&lt;-</span> tibble<span class="sc">::</span><span class="fu">tibble</span>(</span>
-<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  <span class="at">title =</span> items <span class="sc">%&gt;%</span> <span class="fu">xml_find_first</span>(<span class="st">&quot;./title&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">xml_text</span>(),</span>
-<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>  <span class="at">date =</span> items <span class="sc">%&gt;%</span> <span class="fu">xml_find_first</span>(<span class="st">&quot;./pubDate&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">xml_text</span>(),</span>
-<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>  <span class="at">url =</span> items <span class="sc">%&gt;%</span> <span class="fu">xml_find_first</span>(<span class="st">&quot;./guid&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">xml_text</span>()</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  <span class="at">title =</span> items <span class="sc">|&gt;</span> <span class="fu">xml_find_first</span>(<span class="st">&quot;./title&quot;</span>) <span class="sc">|&gt;</span> <span class="fu">xml_text</span>(),</span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>  <span class="at">date =</span> items <span class="sc">|&gt;</span> <span class="fu">xml_find_first</span>(<span class="st">&quot;./pubDate&quot;</span>) <span class="sc">|&gt;</span> <span class="fu">xml_text</span>(),</span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>  <span class="at">url =</span> items <span class="sc">|&gt;</span> <span class="fu">xml_find_first</span>(<span class="st">&quot;./guid&quot;</span>) <span class="sc">|&gt;</span> <span class="fu">xml_text</span>()</span>
 <span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>)</span>
 <span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>bbc_news</span>
 <span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt; # A tibble: 71 × 3</span></span>
@@ -387,15 +387,15 @@ a tidy dataset:</p>
 this data, and provide them directly with the tidy tibble? That’s easy
 to do with pins:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_connect</span>()</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_write</span>(bbc_news)</span></code></pre></div>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>board <span class="sc">|&gt;</span> <span class="fu">pin_write</span>(bbc_news)</span></code></pre></div>
 <p>If you open the pin on RSC (e.g. by running
-<code>board %&gt;% pin_browse(&quot;news_total&quot;)</code>), you’ll see some
+<code>board |&gt; pin_browse(&quot;news_total&quot;)</code>), you’ll see some
 metadata about the pin, a preview of the data, and a control panel which
 allows you to control who can see the data. Assuming you’ve given your
 colleagues access, they can now easily pull down the data for their own
 analysis:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_connect</span>()</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>board <span class="sc">%&gt;%</span> <span class="fu">pin_read</span>(<span class="st">&quot;your_name/bbc_news&quot;</span>)</span></code></pre></div>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;your_name/bbc_news&quot;</span>)</span></code></pre></div>
 </div>
 <div id="automating" class="section level2">
 <h2>Automating</h2>
@@ -414,16 +414,16 @@ library(pins)
 library(xml2)
 
 xml &lt;- read_xml(&quot;http://feeds.bbci.co.uk/news/rss.xml&quot;)
-items &lt;- xml %&gt;% xml_find_all(&quot;//item&quot;)
+items &lt;- xml |&gt; xml_find_all(&quot;//item&quot;)
 
 bbc_news &lt;- tibble::tibble(
-  title = items %&gt;% xml_find_first(&quot;./title&quot;) %&gt;% xml_text(),
-  date = items %&gt;% xml_find_first(&quot;./pubDate&quot;) %&gt;% xml_text(),
-  url = items %&gt;% xml_find_first(&quot;./guid&quot;) %&gt;% xml_text()
+  title = items |&gt; xml_find_first(&quot;./title&quot;) |&gt; xml_text(),
+  date = items |&gt; xml_find_first(&quot;./pubDate&quot;) |&gt; xml_text(),
+  url = items |&gt; xml_find_first(&quot;./guid&quot;) |&gt; xml_text()
 )
 
 board &lt;- board_connect()
-board %&gt;% pin_write(bbc_news)
+board |&gt; pin_write(bbc_news)
 ```
 
 ```{r}
@@ -451,7 +451,7 @@ your app will automatically update shortly after the data changes:</p>
 <span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>)</span>
 <span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a></span>
 <span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output, session) {</span>
-<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>  news <span class="ot">&lt;-</span> board <span class="sc">%&gt;%</span> <span class="fu">pin_reactive_read</span>(<span class="st">&quot;hadley/bbc_news&quot;</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>  news <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_reactive_read</span>(<span class="st">&quot;hadley/bbc_news&quot;</span>)</span>
 <span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>  </span>
 <span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>  output<span class="sc">$</span>news <span class="ot">&lt;-</span> <span class="fu">renderUI</span>({</span>
 <span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>    title <span class="ot">&lt;-</span> htmltools<span class="sc">::</span><span class="fu">htmlEscape</span>(<span class="fu">news</span>()<span class="sc">$</span>title)</span>

@@ -18,22 +18,22 @@ if (interactive()) {
   xml <- read_xml("bbc-news.xml")  
 }
 
-items <- xml %>% xml_find_all("//item")
+items <- xml |> xml_find_all("//item")
 
 bbc_news <- tibble::tibble(
-  title = items %>% xml_find_first("./title") %>% xml_text(),
-  date = items %>% xml_find_first("./pubDate") %>% xml_text(),
-  url = items %>% xml_find_first("./guid") %>% xml_text()
+  title = items |> xml_find_first("./title") |> xml_text(),
+  date = items |> xml_find_first("./pubDate") |> xml_text(),
+  url = items |> xml_find_first("./guid") |> xml_text()
 )
 bbc_news
 
 ## ----eval = FALSE-------------------------------------------------------------
 # board <- board_connect()
-# board %>% pin_write(bbc_news)
+# board |> pin_write(bbc_news)
 
 ## ----eval=FALSE---------------------------------------------------------------
 # board <- board_connect()
-# board %>% pin_read("your_name/bbc_news")
+# board |> pin_read("your_name/bbc_news")
 
 ## ----echo = FALSE, comment = ""-----------------------------------------------
 cat(readLines("connect-automate.txt"), sep = "\n")
@@ -50,7 +50,7 @@ cat(readLines("connect-automate.txt"), sep = "\n")
 # )
 # 
 # server <- function(input, output, session) {
-#   news <- board %>% pin_reactive_read("hadley/bbc_news")
+#   news <- board |> pin_reactive_read("hadley/bbc_news")
 # 
 #   output$news <- renderUI({
 #     title <- htmltools::htmlEscape(news()$title)

@@ -123,7 +123,7 @@ board_register_github <- function(
   cache = NULL,
   ...
 ) {
-  lifecycle::deprecate_warn(
+  lifecycle::deprecate_stop(
     "1.4.0",
     "board_register_github()",
     details = 'Learn more at <https://pins.rstudio.com/articles/pins-update.html>'
@@ -196,9 +196,14 @@ github_update_temp_index <- function(
   }
 
   index_matches <- sapply(index, function(e) identical(e$path, path))
-  index_pos <- if (length(index_matches) > 0) which(index_matches) else
+  index_pos <- if (length(index_matches) > 0) {
+    which(index_matches)
+  } else {
     length(index) + 1
-  if (length(index_pos) == 0) index_pos <- length(index) + 1
+  }
+  if (length(index_pos) == 0) {
+    index_pos <- length(index) + 1
+  }
 
   if (identical(operation, "create")) {
     metadata$columns <- NULL
@@ -304,8 +309,9 @@ github_create_release <- function(board, name) {
   index_url <- github_url(board, branch = NULL, "/commits/", board$branch)
   response <- httr::GET(index_url, github_headers(board))
   version <- "initial"
-  if (!httr::http_error(response))
+  if (!httr::http_error(response)) {
     version <- substr(httr::content(response, encoding = "UTF-8")$sha, 1, 7)
+  }
 
   release_url <- github_url(board, branch = NULL, "/releases")
 
@@ -336,7 +342,7 @@ github_create_release <- function(board, name) {
     encode = "json"
   )
 
-  if (httr::http_error(response))
+  if (httr::http_error(response)) {
     stop(
       "Failed to create release '",
       release$tag_name,
@@ -345,6 +351,7 @@ github_create_release <- function(board, name) {
       "': ",
       httr::content(response, encoding = "UTF-8")$message
     )
+  }
 
   httr::content(response, encoding = "UTF-8")
 }
@@ -360,13 +367,14 @@ github_upload_release <- function(board, release, name, file, file_path) {
     http_utils_progress("up", size = file.info(normalizePath(file_path))$size)
   )
 
-  if (httr::http_error(response))
+  if (httr::http_error(response)) {
     stop(
       "Failed to upload asset '",
       file,
       "': ",
       httr::content(response, encoding = "UTF-8")$message
     )
+  }
 
   httr::content(response, encoding = "UTF-8")$url
 }
@@ -573,7 +581,9 @@ board_pin_create.pins_board_github <- function(
   branch <- if (is.null(list(...)$branch)) board$branch else list(...)$branch
   release_storage <- identical(list(...)$release_storage, TRUE)
 
-  if (!file.exists(path)) stop("File does not exist: ", path)
+  if (!file.exists(path)) {
+    stop("File does not exist: ", path)
+  }
 
   if (!identical(branch, board$branch)) {
     if (!branch %in% github_branches(board)) {
@@ -605,7 +615,9 @@ board_pin_create.pins_board_github <- function(
         release_storage) &&
         !identical(file, "data.txt")
     ) {
-      if (is.null(release)) release <- github_create_release(board, name)
+      if (is.null(release)) {
+        release <- github_create_release(board, name)
+      }
       download_url <- github_upload_release(
         board,
         release,
@@ -660,8 +672,11 @@ board_pin_create.pins_board_github <- function(
   }
 
   # add remaining files in a single commit
-  commit <- if (is.null(list(...)$commit)) paste("update", name) else
+  commit <- if (is.null(list(...)$commit)) {
+    paste("update", name)
+  } else {
     list(...)$commit
+  }
   github_files_commit(board, upload_defs, branch, commit)
 }
 
@@ -683,7 +698,7 @@ board_pin_find.pins_board_github <- function(board, text, ...) {
       content <- rawToChar(jsonlite::base64_dec(content$content))
     }
 
-    result <- board_manifest_load(content) %>%
+    result <- board_manifest_load(content) |>
       pin_results_from_rows()
   } else {
     pin_log(
@@ -755,10 +770,11 @@ github_branches <- function(board) {
     github_url(board, "/git", "/refs", branch = NULL),
     github_headers(board)
   )
-  if (httr::http_error(response))
+  if (httr::http_error(response)) {
     stop(httr::content(response, encoding = "UTF-8"))
+  }
 
-  httr::content(response, encoding = "UTF-8") %>%
+  httr::content(response, encoding = "UTF-8") |>
     sapply(function(e) gsub("refs/heads/", "", e$ref))
 }
 
@@ -782,7 +798,9 @@ github_branch <- function(board, branch) {
     httr::content(response, encoding = "UTF-8")
   )
 
-  if (length(branch_object) != 1) stop("Failed to retrieve branch ", branch)
+  if (length(branch_object) != 1) {
+    stop("Failed to retrieve branch ", branch)
+  }
 
   branch_object[[1]]
 }
@@ -848,11 +866,13 @@ github_download_files <- function(index, temp_path, board) {
         file$url,
         github_headers(board),
         http_utils_progress()
-      ) %>%
+      ) |>
         httr::content(encoding = "UTF-8")
       github_download_files(sub_index, file.path(temp_path, file$name), board)
     } else {
-      if (!dir.exists(temp_path)) dir.create(temp_path, recursive = TRUE)
+      if (!dir.exists(temp_path)) {
+        dir.create(temp_path, recursive = TRUE)
+      }
       httr::GET(
         file$download_url,
         httr::write_disk(file.path(temp_path, basename(file$download_url))),
@@ -904,8 +924,11 @@ board_pin_get.pins_board_github <- function(
       file_name <- if (
         !identical(names(index_path), NULL) &&
           nchar(names(index_path)[file_idx]) > 0
-      )
-        names(index_path)[file_idx] else NULL
+      ) {
+        names(index_path)[file_idx]
+      } else {
+        NULL
+      }
 
       if (grepl("^http://|^https://", file)) {
         # manually move authorization to url due to https://github.com/octokit/rest.js/issues/967
@@ -985,8 +1008,11 @@ board_pin_remove.pins_board_github <- function(board, name, ...) {
   for (file in index) {
     pin_log("deleting ", file$name)
 
-    commit <- if (is.null(list(...)$commit)) paste("delete", file$name) else
+    commit <- if (is.null(list(...)$commit)) {
+      paste("delete", file$name)
+    } else {
       list(...)$commit
+    }
 
     response <- httr::DELETE(
       file.path(base_url, file$name),
@@ -1017,13 +1043,14 @@ board_pin_remove.pins_board_github <- function(board, name, ...) {
     github_delete_release(board, name)
   }
 
-  if (update_index)
+  if (update_index) {
     github_update_index(
       board,
       paste0(board$path, name),
       commit,
       operation = "remove"
     )
+  }
 }
 
 #' @export

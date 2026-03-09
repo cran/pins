@@ -12,12 +12,12 @@ test_that("provides key methods", {
     rds = github_raw("rstudio/pins-r/master/tests/testthat/pin-rds/")
   ))
 
-  board %>%
-    pin_list() %>%
+  board |>
+    pin_list() |>
     expect_equal("rds")
 
-  board %>%
-    pin_read("rds") %>%
+  board |>
+    pin_read("rds") |>
     expect_equal(data.frame(x = 1:10))
 
   expect_snapshot(board_deparse(board))
@@ -40,12 +40,12 @@ test_that("only downloads once", {
     rds = github_raw("rstudio/pins-r/master/tests/testthat/pin-rds/")
   ))
 
-  board %>%
-    pin_read("rds") %>%
+  board |>
+    pin_read("rds") |>
     expect_condition(class = "pins_cache_downloaded")
 
-  board %>%
-    pin_read("rds") %>%
+  board |>
+    pin_read("rds") |>
     expect_condition(class = "pins_cache_cached")
 })
 
@@ -54,19 +54,46 @@ test_that("raw pins can only be downloaded", {
     raw = github_raw("rstudio/pins-r/master/tests/testthat/pin-files/first.txt")
   ))
 
-  board %>%
-    pin_read("raw") %>%
+  board |>
+    pin_read("raw") |>
     expect_snapshot_error()
 
-  board %>%
-    pin_download("raw") %>%
-    readLines() %>%
+  board |>
+    pin_download("raw") |>
+    readLines() |>
     expect_equal("abcdefg")
+})
+
+test_that("raw pin download includes progress bar or not", {
+  board <- board_url_test(c(
+    raw = github_raw("rstudio/pins-r/master/tests/testthat/pin-files/first.txt")
+  ))
+
+  progress_bar_end <- "100%"
+
+  with_mocked_bindings(
+    http_utils_progress = function(...) httr::progress(type = "down"),
+    {
+      board |>
+        pin_download("raw") |>
+        expect_output(progress_bar_end)
+    }
+  )
+
+  with_mocked_bindings(
+    http_utils_progress = function(...) NULL,
+    {
+      board |>
+        pin_download("raw") |>
+        capture_output() |>
+        expect_no_match(progress_bar_end)
+    }
+  )
 })
 
 test_that("can download pin from board_folder version dir", {
   b1 <- board_folder(withr::local_tempfile())
-  b1 %>% pin_write(1:10, "x")
+  b1 |> pin_write(1:10, "x")
   b2_path <- fs::path(b1$path, "x", pin_versions(b1, "x")$version)
 
   b2_server <- webfakes::new_app()
@@ -74,16 +101,16 @@ test_that("can download pin from board_folder version dir", {
   board_fake <- webfakes::new_app_process(b2_server)
 
   b2 <- board_url(c(x = board_fake$url()))
-  b2 %>%
-    pin_read("x") %>%
+  b2 |>
+    pin_read("x") |>
     expect_equal(1:10)
 })
 
 test_that("can download pin from versioned board_folder", {
   b1 <- board_folder(withr::local_tempdir(), versioned = TRUE)
-  b1 %>% pin_write(1:10, "x", type = "json")
-  b1 %>% pin_write(11:20, "y", type = "json")
-  b1 %>% pin_write(1:20, "y", type = "csv")
+  b1 |> pin_write(1:10, "x", type = "json")
+  b1 |> pin_write(11:20, "y", type = "json")
+  b1 |> pin_write(1:20, "y", type = "csv")
   write_board_manifest(b1)
   b1_path <- fs::path(b1$path)
 
@@ -92,15 +119,15 @@ test_that("can download pin from versioned board_folder", {
   b1_process <- webfakes::new_app_process(b1_server)
 
   b2 <- board_url(b1_process$url())
-  b2 %>%
-    pin_read("x") %>%
+  b2 |>
+    pin_read("x") |>
     expect_equal(1:10)
 })
 
 test_that("pin_meta() works for versioned board", {
   b1 <- board_folder(withr::local_tempfile(), versioned = TRUE)
-  b1 %>% pin_write(11:20, "y", type = "json")
-  b1 %>% pin_write(1:20, "y", type = "csv")
+  b1 |> pin_write(11:20, "y", type = "json")
+  b1 |> pin_write(1:20, "y", type = "csv")
   write_board_manifest(b1)
   b1_path <- fs::path(b1$path)
 
@@ -110,24 +137,23 @@ test_that("pin_meta() works for versioned board", {
 
   b2 <- board_url(b1_process$url())
 
-  versions <- b2 %>% pin_versions("y")
+  versions <- b2 |> pin_versions("y")
 
   expect_s3_class(
-    b2 %>% pin_meta("y"),
+    b2 |> pin_meta("y"),
     "pins_meta"
   )
 
   expect_s3_class(
-    b2 %>% pin_meta("y", version = versions$version[[1]]),
+    b2 |> pin_meta("y", version = versions$version[[1]]),
     "pins_meta"
   )
-
 })
 
 test_that("useful error for missing or unparseable manifest file", {
   b1 <- board_folder(withr::local_tempdir(), versioned = TRUE)
-  b1 %>% pin_write(1:10, "x", type = "json")
-  b1 %>% pin_write(1:20, "y", type = "csv")
+  b1 |> pin_write(1:10, "x", type = "json")
+  b1 |> pin_write(1:20, "y", type = "csv")
   b1_path <- fs::path(b1$path)
 
   b1_server <- webfakes::new_app()
@@ -148,19 +174,18 @@ test_that("useful error for missing or unparseable manifest file", {
     board_url(b4$url()),
     "Failed to parse manifest file at URL"
   )
-
 })
 
 test_that("useful errors for unsupported methods", {
   board <- board_url(c("x" = "foo"))
 
   expect_snapshot(error = TRUE, {
-    board %>% pin_write(1:5, "x")
-    board %>% pin_delete("x")
-    board %>% pin_meta("froofy", version = "x")
-    board %>% pin_meta("x", version = "x")
-    board %>% pin_versions("x")
-    board %>% pin_version_delete("x")
+    board |> pin_write(1:5, "x")
+    board |> pin_delete("x")
+    board |> pin_meta("froofy", version = "x")
+    board |> pin_meta("x", version = "x")
+    board |> pin_versions("x")
+    board |> pin_version_delete("x")
     pin(1:5, name = "x", board = board)
     pin_get(name = "x", board = board)
   })

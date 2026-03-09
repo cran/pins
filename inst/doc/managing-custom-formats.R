@@ -22,7 +22,7 @@ pin_upload(board, paths = path, name = pin_name)
 
 ## -----------------------------------------------------------------------------
 mtcars_download <- 
-  pin_download(board, pin_name) %>%
+  pin_download(board, pin_name) |>
   arrow::read_feather()
 
 head(mtcars_download)
@@ -43,8 +43,8 @@ pin_upload_arrow <- function(board, x, name, ...) {
 pin_upload_arrow(board, x = mtcars, name = "mtcars-arrow2")
 
 ## -----------------------------------------------------------------------------
-pin_download(board, name = "mtcars-arrow2") %>%
-  arrow::read_feather() %>%
+pin_download(board, name = "mtcars-arrow2") |>
+  arrow::read_feather() |>
   head()
 
 ## -----------------------------------------------------------------------------

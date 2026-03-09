@@ -36,10 +36,10 @@ pin_write_factor_json <- function(board,
 
 ## -----------------------------------------------------------------------------
 ten_letters <- factor(sample(letters, size = 10), levels = letters)
-board %>% pin_write_factor_json(ten_letters, "letters-as-json")
+board |> pin_write_factor_json(ten_letters, "letters-as-json")
 
 ## -----------------------------------------------------------------------------
-board %>% pin_read("letters-as-json")
+board |> pin_read("letters-as-json")
 
 ## -----------------------------------------------------------------------------
 pin_read_factor_json <- function(board, name, version = NULL, hash = NULL, ...) {
@@ -48,5 +48,5 @@ pin_read_factor_json <- function(board, name, version = NULL, hash = NULL, ...) 
   factor(ret, levels = meta$user$factor_levels)
 }
 
-board %>% pin_read_factor_json("letters-as-json")
+board |> pin_read_factor_json("letters-as-json")
 

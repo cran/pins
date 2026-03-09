@@ -34,11 +34,15 @@ legacy_azure <- function(
   name = "azure",
   ...
 ) {
-  if (nchar(container) == 0)
+  if (nchar(container) == 0) {
     stop("The 'azure' board requires a 'container' parameter.")
-  if (nchar(account) == 0)
+  }
+  if (nchar(account) == 0) {
     stop("The 'azure' board requires an 'account' parameter.")
-  if (nchar(key) == 0) stop("The 'azure' board requires a 'key' parameter.")
+  }
+  if (nchar(key) == 0) {
+    stop("The 'azure' board requires a 'key' parameter.")
+  }
 
   azure_url <- paste0("https://", account, ".blob.core.windows.net/", container)
 
@@ -68,7 +72,7 @@ board_register_azure <- function(
   path = NULL,
   ...
 ) {
-  lifecycle::deprecate_warn(
+  lifecycle::deprecate_stop(
     "1.4.0",
     "board_register_azure()",
     details = 'Learn more at <https://pins.rstudio.com/articles/pins-update.html>'
@@ -128,7 +132,7 @@ azure_headers <- function(board, verb, path, file) {
   signature <- openssl::sha256(
     charToRaw(content),
     key = jsonlite::base64_dec(board$key)
-  ) %>%
+  ) |>
     jsonlite::base64_enc()
 
   headers <- httr::add_headers(

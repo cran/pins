@@ -1,3 +1,19 @@
+# pins 1.4.2
+
+* Added support of the `qs2` format (#865, @atsyplenkov).
+
+* Removed support for the `qs` format (#895).
+
+* Added download progress bar for `board_url()` (#872, @lbm364dl).
+
+* Added support for writing pins with multiple types, like `type = c("rds", "csv")` (#877, @lbm364dl).
+
+* Switched to using the native pipe in examples and documentation (#879).
+
+* Further escalated gradual deprecation process for legacy pins functions such as `pin()` (#879).
+
+* Added support for `pin_list()` to `board_gcs()` for Google Cloud Storage (#889, @sverrirarnors).
+
 # pins 1.4.1
 
 * Support new `preview_data` parameter for pin previews on Posit Connect (#850).

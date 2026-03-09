@@ -11,18 +11,6 @@ test_that("get useful error for rebranding", {
   expect_snapshot(board <- board_rsconnect(), error = TRUE)
 })
 
-test_that("can round-trip a pin (v0)", {
-  board <- board_connect_ptd()
-  ptd_user_name <- rsconnect::accounts(server = "pub.demo.posit.team")$name
-
-  df1 <- data.frame(x = 1:5)
-  pin(df1, "test-df1", board = board)
-  withr::defer(pin_delete(board, paste0(ptd_user_name, "/test-df1")))
-
-  df2 <- pin_get(paste0(ptd_user_name, "/test-df1"), board = board)
-  expect_equal(df1, df2)
-})
-
 test_that("can find/search pins", {
   board <- board_connect_test()
   name <- pin_write(board, 1:5, "test-xyzxyzxyzxyz", title = "defdefdef")
@@ -54,18 +42,6 @@ test_that("can update access_type", {
   expect_equal(rsc_content_info(board, guid)$access_type, "logged_in")
 })
 
-test_that("can write pin created another user", {
-  board1 <- board_connect_susan()
-  name <- local_pin(board1, 1:5)
-  guid <- pin_meta(board1, name)$local$content_id
-  add_another_user(board1, "derek", guid)
-
-  board2 <- board_connect_derek()
-  pin_write(board2, 10:15, name)
-
-  expect_equal(pin_read(board1, name), 10:15)
-})
-
 test_that("can deparse", {
   board <- new_board_v1(
     "pins_board_connect",
@@ -95,19 +71,18 @@ test_that("can create and delete content", {
   board <- board_connect_test()
 
   rsc_content_create(board, "test-1", list())
-  expect_snapshot(error = TRUE,
-    rsc_content_create(board, "test-1", list())
-  )
+  expect_snapshot(error = TRUE, rsc_content_create(board, "test-1", list()))
 
   rsc_content_delete(board, paste0(board$account, "/test-1"))
-  expect_snapshot(error = TRUE,
-    rsc_content_delete(board, "test-1")
-  )
+  expect_snapshot(error = TRUE, rsc_content_delete(board, "test-1"))
 })
 
 test_that("can parse user & pin name", {
   expect_equal(rsc_parse_name("x"), list(owner = NULL, name = "x", full = NULL))
-  expect_equal(rsc_parse_name("y/x"), list(owner = "y", name = "x", full = "y/x"))
+  expect_equal(
+    rsc_parse_name("y/x"),
+    list(owner = "y", name = "x", full = "y/x")
+  )
 })
 
 test_that("can find cached versions", {
@@ -121,7 +96,10 @@ test_that("can find cached versions", {
 
   pin_write(board, 2, name)
   # Cached version hasn't changed since we haven't read
-  expect_message(expect_equal(rsc_content_version_cached(board, guid), cached_v))
+  expect_message(expect_equal(
+    rsc_content_version_cached(board, guid),
+    cached_v
+  ))
 })
 
 test_that("rsc_path() always includes leading /", {

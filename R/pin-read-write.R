@@ -15,6 +15,9 @@
 #' @param hash Specify a hash to verify that you get exactly the dataset that
 #'   you expect. You can find the hash of an existing pin by looking for
 #'   `pin_hash` in [pin_meta()].
+#' @param type Retrieve the pin with this specific file type. If not supplied and
+#'   the pin has been stored with multiple types, one will be chosen arbitrarily.
+#'   Specify the file type explicitly to avoid this.
 #' @param ... Additional arguments passed on to methods for a specific board.
 #' @return `pin_read()` returns an R object read from the pin;
 #'   `pin_write()` returns the fully qualified name of the new pin, invisibly.
@@ -22,29 +25,42 @@
 #' @examples
 #' b <- board_temp(versioned = TRUE)
 #'
-#' b %>% pin_write(1:10, "x", description = "10 numbers")
+#' b |> pin_write(1:10, "x", description = "10 numbers")
 #' b
 #'
-#' b %>% pin_meta("x")
-#' b %>% pin_read("x")
+#' b |> pin_meta("x")
+#' b |> pin_read("x")
 #'
 #' # Add a new version
-#' b %>% pin_write(2:11, "x")
-#' b %>% pin_read("x")
+#' b |> pin_write(2:11, "x")
+#' b |> pin_read("x")
 #'
 #' # Retrieve an older version
-#' b %>% pin_versions("x")
-#' b %>% pin_read("x", version = .Last.value$version[[1]])
+#' b |> pin_versions("x")
+#' b |> pin_read("x", version = .Last.value$version[[1]])
 #' # (Normally you'd specify the version with a string, but since the
 #' # version includes the date-time I can't do that in an example)
-pin_read <- function(board, name, version = NULL, hash = NULL, ...) {
+#'
+#'  # Pin with multiple types
+#'  b |> pin_write(1:10, "y", type = c("rds", "json"))
+#'  b |> pin_read("y", type = "json")
+#'  # Automatically chooses one of the available types
+#'  b |> pin_read("y")
+pin_read <- function(
+  board,
+  name,
+  version = NULL,
+  hash = NULL,
+  type = NULL,
+  ...
+) {
   check_dots_used()
   check_board(board, "pin_read", "pin_get")
 
   meta <- pin_fetch(board, name, version = version, ...)
   check_hash(meta, hash)
 
-  object_read(meta)
+  object_read(meta, type)
 }
 
 #' @param x An object (typically a data frame) to pin.
@@ -55,11 +71,12 @@ pin_read <- function(board, name, version = NULL, hash = NULL, ...) {
 #' @param metadata A list containing additional metadata to store with the pin.
 #'   When retrieving the pin, this will be stored in the `user` key, to
 #'   avoid potential clashes with the metadata that pins itself uses.
-#' @param type File type used to save `x` to disk. Must be one of
-#'   "csv", "json", "rds", "parquet", "arrow", or "qs". If not supplied, will
-#'   use JSON for bare lists and RDS for everything else. Be aware that CSV and
-#'   JSON are plain text formats, while RDS, Parquet, Arrow, and
-#'   [qs](https://CRAN.R-project.org/package=qs) are binary formats.
+#' @param type File types used to save `x` to disk. Supports a single type or a
+#'   vector of types (to pin in more than one format. Each type must be one of
+#'   "csv", "json", "rds", "parquet", "arrow", or "qs2". If not supplied,
+#'   will use JSON for bare lists and RDS for everything else. Be aware that CSV
+#'   and JSON are plain text formats, while RDS, Parquet, Arrow, and
+#'   [qs2](https://CRAN.R-project.org/package=qs2) are binary formats.
 #' @param versioned Should the pin be versioned? The default, `NULL`, will
 #'   use the default for `board`
 #' @param tags A character vector of tags for the pin; most important for
@@ -71,21 +88,34 @@ pin_read <- function(board, name, version = NULL, hash = NULL, ...) {
 #'   contents are compared, not the pin metadata. Defaults to `FALSE`.
 #' @rdname pin_read
 #' @export
-pin_write <- function(board, x,
-                      name = NULL,
-                      ...,
-                      type = NULL,
-                      title = NULL,
-                      description = NULL,
-                      metadata = NULL,
-                      versioned = NULL,
-                      tags = NULL,
-                      urls = NULL,
-                      force_identical_write = FALSE) {
+pin_write <- function(
+  board,
+  x,
+  name = NULL,
+  ...,
+  type = NULL,
+  title = NULL,
+  description = NULL,
+  metadata = NULL,
+  versioned = NULL,
+  tags = NULL,
+  urls = NULL,
+  force_identical_write = FALSE
+) {
   check_board(board, "pin_write", "pin")
   dots <- list2(...)
   if (!missing(...) && (is.null(names(dots)) || names(dots)[[1]] == "")) {
-    cli::cli_abort('Arguments after the dots `...` must be named, like {.code type = "json"}.')
+    cli::cli_abort(
+      'Arguments after the dots `...` must be named, like {.code type = "json"}.'
+    )
+  }
+  if (!is_null(type) && any("qs" %in% type)) {
+    lifecycle::deprecate_stop(
+      when = "1.4.2",
+      what = I('The file type "qs"'),
+      with = I('`type = "qs2"`'),
+      details = "The qs package has been archived."
+    )
   }
 
   if (is.null(name)) {
@@ -109,12 +139,17 @@ pin_write <- function(board, x,
     pins_inform("Guessing `type = '{type}'`")
   }
 
-  path <- fs::path_temp(fs::path_ext_set(fs::path_file(name), type))
-  object_write(x, path, type = type)
-  withr::defer(fs::file_delete(path))
+  paths <- fs::path_temp(fs::path_ext_set(
+    fs::path_file(rep_along(type, name)),
+    type
+  ))
+  for (i in seq_along(paths)) {
+    object_write(x, paths[i], type = type[i], call = caller_env())
+  }
+  withr::defer(fs::file_delete(paths))
 
   meta <- standard_meta(
-    paths = path,
+    paths = paths,
     type = type,
     title = title %||% default_title(name, data = x),
     description = description,
@@ -135,7 +170,7 @@ pin_write <- function(board, x,
   }
 
   check_dots_used()
-  name <- pin_store(board, name, path, meta, versioned = versioned, x = x, ...)
+  name <- pin_store(board, name, paths, meta, versioned = versioned, x = x, ...)
   pins_inform("Writing to pin '{name}'")
   invisible(name)
 }
@@ -151,10 +186,11 @@ guess_type <- function(x) {
   }
 }
 
-object_write <- function(x, path, type = "rds") {
-  type <- arg_match0(type, setdiff(object_types, "file"))
+object_write <- function(x, path, type = "rds", call) {
+  type <- arg_match0(type, setdiff(object_types, "file"), error_call = call)
 
-  switch(type,
+  switch(
+    type,
     rds = write_rds(x, path),
     json = jsonlite::write_json(x, path, auto_unbox = TRUE),
     parquet = write_parquet(x, path),
@@ -162,7 +198,7 @@ object_write <- function(x, path, type = "rds") {
     pickle = abort("'pickle' pins not supported in R"),
     joblib = abort("'joblib' pins not supported in R"),
     csv = utils::write.csv(x, path, row.names = FALSE),
-    qs = write_qs(x, path)
+    qs2 = write_qs2(x, path)
   )
 
   path
@@ -187,9 +223,9 @@ write_rds_test <- function(x, path) {
   invisible(path)
 }
 
-write_qs <- function(x, path) {
-  check_installed("qs")
-  qs::qsave(x, path)
+write_qs2 <- function(x, path) {
+  check_installed("qs2")
+  qs2::qs_save(x, path)
   invisible(path)
 }
 
@@ -205,19 +241,37 @@ write_arrow <- function(x, path) {
   invisible(path)
 }
 
-object_types <- c("rds", "json", "parquet", "arrow", "pickle", "csv", "qs", "file")
+object_types <-
+  c("rds", "json", "parquet", "arrow", "pickle", "csv", "qs2", "file")
 
-object_read <- function(meta) {
+object_read <- function(meta, type, call = caller_env()) {
   path <- fs::path(meta$local$dir, meta$file)
+
   missing <- !fs::file_exists(path)
   if (any(missing)) {
     abort(c("Cache failure. Missing files:", path[!missing]))
   }
 
-  if (meta$api_version == 1) {
-    type <- arg_match0(meta$type, object_types)
+  if (is.null(type)) {
+    type <- meta$type[1]
+    if (length(meta$type) > 1) {
+      cli::cli_warn(c(
+        "!" = "Pin {.val {meta$name}} has multiple types: {.val {meta$type}}",
+        "*" = "Automatically choosing {.val {type}}",
+        "*" = "To avoid this warning, specify the {.arg type} explicitly"
+      ))
+    }
+  }
 
-    switch(type,
+  path <- path |>
+    purrr::detect(~ fs::path_ext(.x) == type)
+
+  if (meta$api_version == 1) {
+    type <- arg_match0(type, object_types, error_call = call)
+    type <- arg_match0(type, meta$type, error_call = call)
+
+    switch(
+      type,
       rds = readRDS(path),
       json = jsonlite::read_json(path, simplifyVector = TRUE),
       parquet = read_parquet(path),
@@ -225,7 +279,7 @@ object_read <- function(meta) {
       pickle = abort("'pickle' pins not supported in R"),
       joblib = abort("'joblib' pins not supported in R"),
       csv = utils::read.csv(path),
-      qs = read_qs(path),
+      qs2 = read_qs2(path),
       file = cli_abort(c(
         "Cannot automatically read pin:",
         "*" = "Is your pin specified as a full path? Retrieve it with {.code pin_download()}",
@@ -237,7 +291,8 @@ object_read <- function(meta) {
     type <- arg_match0(meta$type, c("default", "files", "table"))
     path <- fs::path_dir(path[[1]])
 
-    switch(type,
+    switch(
+      type,
       default = pin_load.default(path),
       table = pin_load.table(path),
       files = pin_load.files(path)
@@ -245,9 +300,9 @@ object_read <- function(meta) {
   }
 }
 
-read_qs <- function(path) {
-  check_installed("qs")
-  qs::qread(path, strict = TRUE)
+read_qs2 <- function(path) {
+  check_installed("qs2")
+  qs2::qs_read(path)
 }
 
 read_parquet <- function(path) {

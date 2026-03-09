@@ -1,5 +1,5 @@
 test_that("can round trip all types", {
-  skip_if_not_installed("qs")
+  skip_if_not_installed("qs2")
   skip_if_not_installed("arrow")
   skip_if_not_installed("nanoparquet")
   board <- board_temp()
@@ -24,8 +24,12 @@ test_that("can round trip all types", {
   pin_write(board, df, "df-4", type = "csv")
   expect_equal(pin_read(board, "df-4"), as.data.frame(df))
 
-  pin_write(board, df, "df-5", type = "qs")
-  expect_equal(pin_read(board, "df-5"), df)
+  expect_error(
+    pin_write(board, df, "df-5", type = "qs")
+  )
+
+  pin_write(board, df, "df-6", type = "qs2")
+  expect_equal(pin_read(board, "df-6"), df)
 
   # List
   x <- list(a = 1:5, b = 1:10)
@@ -100,5 +104,36 @@ test_that("can request specific hash", {
     b <- board_temp()
     pin_write(b, mtcars, name = "mtcars", type = "rds")
     pin_read(b, "mtcars", hash = "ABCD")
+  })
+})
+
+test_that("can write and read multiple types", {
+  board <- board_temp()
+
+  # Data frames
+  df <- tibble::tibble(x = 1:10)
+  pin_write(board, df, "df-1", type = c("rds", "csv"))
+
+  expect_warning(
+    board |>
+      pin_read("df-1") |>
+      expect_equal(df)
+  )
+
+  board |>
+    pin_read("df-1", type = "rds") |>
+    expect_equal(df)
+
+  board |>
+    pin_read("df-1", type = "csv") |>
+    tibble::as_tibble() |>
+    expect_equal(df)
+
+  expect_snapshot(error = TRUE, {
+    board |>
+      pin_read("df-1", type = "froopy-loops")
+    # No error, only snapshot for warning
+    board |>
+      pin_read("df-1")
   })
 })

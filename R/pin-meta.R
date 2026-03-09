@@ -29,18 +29,18 @@
 #' @export
 #' @examples
 #' b <- board_temp()
-#' b %>% pin_write(head(mtcars), "mtcars", metadata = list("Hadley" = TRUE))
+#' b |> pin_write(head(mtcars), "mtcars", metadata = list("Hadley" = TRUE))
 #'
 #' # Get the pin
-#' b %>% pin_read("mtcars")
+#' b |> pin_read("mtcars")
 #' # Get its metadata
-#' b %>% pin_meta("mtcars")
+#' b |> pin_meta("mtcars")
 #' # Get path to underlying data
-#' b %>% pin_download("mtcars")
+#' b |> pin_download("mtcars")
 #'
 #' # Use tags instead
-#' b %>% pin_write(tail(mtcars), "mtcars", tags = c("fuel-efficiency", "automotive"))
-#' b %>% pin_meta("mtcars")
+#' b |> pin_write(tail(mtcars), "mtcars", tags = c("fuel-efficiency", "automotive"))
+#' b |> pin_meta("mtcars")
 #'
 pin_meta <- function(board, name, version = NULL, ...) {
   check_board(board, "pin_meta", "pin_info")
@@ -71,7 +71,10 @@ multi_meta <- function(board, names) {
       type = map_chr(meta, ~ .x$type %||% NA_character_),
       title = map_chr(meta, ~ .x$title %||% NA_character_),
       created = .POSIXct(map_dbl(meta, ~ .x$created %||% NA_real_)),
-      file_size = fs::as_fs_bytes(map_dbl(meta, ~ sum(.x$file_size %||% NA_real_))),
+      file_size = fs::as_fs_bytes(map_dbl(
+        meta,
+        ~ sum(.x$file_size %||% NA_real_)
+      )),
       meta = meta
     )
   }
@@ -98,7 +101,15 @@ empty_local_meta <- local_meta(x = NULL, name = NULL, dir = NULL)
 
 test_api_meta <- function(board) {
   testthat::test_that("can round-trip pin metadata", {
-    name <- local_pin(board, 1, title = "title", description = "desc", metadata = list(a = "a"), tags = c("tag1", "tag2"), urls = "https://posit.co/")
+    name <- local_pin(
+      board,
+      1,
+      title = "title",
+      description = "desc",
+      metadata = list(a = "a"),
+      tags = c("tag1", "tag2"),
+      urls = "https://posit.co/"
+    )
     meta <- pin_meta(board, name)
     testthat::expect_equal(meta$name, name)
     testthat::expect_equal(meta$title, "title")
@@ -109,15 +120,22 @@ test_api_meta <- function(board) {
   })
 
   testthat::test_that("can update pin metadata", {
-  mock_version_name <-
-    mockery::mock(
-      "20130104T050607Z-xxxxx",
-      "20130204T050607Z-yyyyy"
-    )
-  testthat::local_mocked_bindings(version_name = mock_version_name)
+    mock_version_name <-
+      mockery::mock(
+        "20130104T050607Z-xxxxx",
+        "20130204T050607Z-yyyyy"
+      )
+    testthat::local_mocked_bindings(version_name = mock_version_name)
     # RSC requires at least 3 characters
     name <- local_pin(board, 1, title = "xxx-a1", description = "xxx-a2")
-    pin_write(board, 1, name, title = "xxx-b1", description = "xxx-b2", force_identical_write = TRUE)
+    pin_write(
+      board,
+      1,
+      name,
+      title = "xxx-b1",
+      description = "xxx-b2",
+      force_identical_write = TRUE
+    )
 
     meta <- pin_meta(board, name)
     testthat::expect_equal(meta$title, "xxx-b1")
@@ -148,7 +166,6 @@ test_api_meta <- function(board) {
     testthat::expect_vector(meta$user, list())
     testthat::expect_vector(meta$local, list())
   })
-
 }
 
 #' @export

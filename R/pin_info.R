@@ -11,16 +11,6 @@
 #' @param signature Should a signature to identify this pin be shown?
 #' @param ... Additional parameters.
 #'
-#' @examplesIf rlang::is_installed("filelock")
-#' # old API
-#' board_register_local(cache = tempfile())
-#' pin(mtcars)
-#' pin_info("mtcars", "local")
-#'
-#' # new API
-#' board <- board_temp()
-#' board %>% pin_write(mtcars)
-#' board %>% pin_meta("mtcars")
 #' @export
 #' @keywords internal
 pin_info <- function(
@@ -31,7 +21,7 @@ pin_info <- function(
   signature = FALSE,
   ...
 ) {
-  lifecycle::deprecate_warn("1.4.0", "pin_info()", "pin_meta()")
+  lifecycle::deprecate_stop("1.4.0", "pin_info()", "pin_meta()")
 
   if (is.board(board) && !0 %in% board$api) {
     this_not_that("pin_meta", "pin_info")
@@ -67,8 +57,9 @@ pin_info <- function(
   entry_ext <- as.list(entry)
   entry_ext$metadata <- NULL
   entry_ext <- Filter(
-    function(e)
-      !is.list(e) || length(e) != 1 || !is.list(e[[1]]) || length(e[[1]]) > 0,
+    function(e) {
+      !is.list(e) || length(e) != 1 || !is.list(e[[1]]) || length(e[[1]]) > 0
+    },
     entry_ext
   )
   for (name in names(metadata)) {
@@ -92,10 +83,12 @@ print.pin_info <- function(x, ...) {
     info$type,
     "]\n"
   )))
-  if (nchar(info$description) > 0)
+  if (nchar(info$description) > 0) {
     cat(cli::col_silver(paste0("# Description: ", info$description, "\n")))
-  if (!is.null(info$signature))
+  }
+  if (!is.null(info$signature)) {
     cat(cli::col_silver(paste0("# Signature: ", info$signature, "\n")))
+  }
 
   info$board <- info$name <- info$type <- info$description <- info$signature <- NULL
 
@@ -113,9 +106,9 @@ print.pin_info <- function(x, ...) {
       }
     }
 
-    yaml_str <- yaml::as.yaml(info) %>%
-      strsplit("\n") %>%
-      sapply(function(e) paste("#  ", e)) %>%
+    yaml_str <- yaml::as.yaml(info) |>
+      strsplit("\n") |>
+      sapply(function(e) paste("#  ", e)) |>
       paste0(collapse = "\n")
     cat(cli::col_silver(yaml_str))
   }

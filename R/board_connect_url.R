@@ -8,7 +8,7 @@
 #'
 #' @param vanity_urls A named character vector of
 #'   [Connect vanity URLs](https://docs.posit.co/connect/user/content-settings/#custom-url),
-#'   including trailing slash. This board is read only, and the best way to write to a pin 
+#'   including trailing slash. This board is read only, and the best way to write to a pin
 #'   on Connect is [board_connect()].
 #' @family boards
 #' @inheritParams new_board
@@ -25,12 +25,14 @@
 #'     my_vanity_url_pin = "https://pub.current.posit.team/public/great-numbers/"
 #' ))
 #'
-#' board %>% pin_read("my_vanity_url_pin")
+#' board |> pin_read("my_vanity_url_pin")
 #'
-board_connect_url <- function(vanity_urls,
-                              cache = NULL,
-                              use_cache_on_failure = is_interactive(),
-                              headers = connect_auth_headers()) {
+board_connect_url <- function(
+  vanity_urls,
+  cache = NULL,
+  use_cache_on_failure = is_interactive(),
+  headers = connect_auth_headers()
+) {
   board_url(
     urls = vanity_urls,
     cache = cache,
@@ -45,7 +47,7 @@ connect_auth_headers <- function(key = Sys.getenv("CONNECT_API_KEY")) {
   c(Authorization = paste("Key", key))
 }
 
-
+# Test helpers ------------------------------------------------------------
 vanity_url_test <- function(env = parent.frame()) {
   board <- board_connect_test()
   name <- pin_write(board, 1:10, random_pin_name())
@@ -69,23 +71,15 @@ vanity_url_test <- function(env = parent.frame()) {
 
 board_connect_url_test <- function(...) {
   if (connect_has_ptd()) {
-    board_connect_url_ptd(...)
+    board_connect_url(..., cache = fs::file_temp())
+  } else if (nzchar(Sys.getenv("CONNECT_API_KEY"))) {
+    board_connect_url(
+      ...,
+      headers = connect_auth_headers(Sys.getenv("CONNECT_API_KEY"))
+    )
   } else {
-    board_connect_url_susan(...)
+    testthat::skip(
+      "board_connect_url_test() requires CONNECT_API_KEY or Posit's demo PTD server"
+    )
   }
-}
-
-board_connect_url_ptd <- function(...) {
-  if (!connect_has_ptd()) {
-    testthat::skip("board_connect_url_ptd() only works with Posit's demo server")
-  }
-  board_connect_url(..., cache = fs::file_temp())
-}
-
-board_connect_url_susan <- function(...) {
-  creds <- read_creds()
-  board_connect_url(
-    ...,
-    headers = connect_auth_headers(creds$susan_key)
-  )
 }

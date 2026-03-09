@@ -10,7 +10,7 @@ library(pins)
 board <- board_temp(versioned = TRUE)
 
 ## -----------------------------------------------------------------------------
-board %>% pin_write(mtcars, type = "json")
+board |> pin_write(mtcars, type = "json")
 
 ## -----------------------------------------------------------------------------
 # we need a short delay here to keep the versions in the right order
@@ -20,15 +20,15 @@ Sys.sleep(2)
 mtcars_metric <- mtcars
 mtcars_metric$lper100km <- 235.215 / mtcars$mpg
 
-board %>% pin_write(mtcars_metric, name = "mtcars", type = "json")
+board |> pin_write(mtcars_metric, name = "mtcars", type = "json")
 
 ## ----board-pin-list-----------------------------------------------------------
-board %>% pin_list()
+board |> pin_list()
 
-board %>% pin_versions("mtcars")
+board |> pin_versions("mtcars")
 
 ## -----------------------------------------------------------------------------
-board %>% write_board_manifest()
+board |> write_board_manifest()
 
 ## -----------------------------------------------------------------------------
 withr::with_dir(board$path, fs::dir_ls())
@@ -44,16 +44,16 @@ web_board <- board_url(board_process$url())
 # web_board <- board_url("https://not.real.website.co/pins/")
 
 ## -----------------------------------------------------------------------------
-web_board %>% pin_list()
+web_board |> pin_list()
 
-versions <- web_board %>% pin_versions("mtcars")
+versions <- web_board |> pin_versions("mtcars")
 versions
 
 ## -----------------------------------------------------------------------------
-web_board %>% pin_read("mtcars") %>% head()
+web_board |> pin_read("mtcars") |> head()
 
 ## -----------------------------------------------------------------------------
-web_board %>% pin_read("mtcars", version = versions$version[[1]]) %>% head()
+web_board |> pin_read("mtcars", version = versions$version[[1]]) |> head()
 
 ## -----------------------------------------------------------------------------
 # board <- board_url("https://user-name.github.io/repo-name/pins-board/")

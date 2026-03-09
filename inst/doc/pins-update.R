@@ -29,8 +29,8 @@ knitr::opts_chunk$set(
 # # Modern API
 # board <- board_local()
 # 
-# board %>% pin_write(head(mtcars), "mtcars")
-# board %>% pin_read("mtcars")
+# board |> pin_write(head(mtcars), "mtcars")
+# board |> pin_read("mtcars")
 
 ## -----------------------------------------------------------------------------
 # # Legacy API
@@ -42,8 +42,8 @@ knitr::opts_chunk$set(
 
 ## -----------------------------------------------------------------------------
 # # Modern API
-# board %>% pin_upload(path, "alphabet")
-# board %>% pin_download("alphabet")
+# board |> pin_upload(path, "alphabet")
+# board |> pin_download("alphabet")
 
 ## -----------------------------------------------------------------------------
 # # Legacy API
@@ -56,7 +56,7 @@ knitr::opts_chunk$set(
 # board_github <- board_url(c(
 #   raw = paste0(base, "pin-files/first.txt")
 # ))
-# board_github %>% pin_download("raw")
+# board_github |> pin_download("raw")
 
 ## -----------------------------------------------------------------------------
 # # Legacy API
@@ -67,6 +67,6 @@ knitr::opts_chunk$set(
 # # Modern API
 # board <- board_local()
 # 
-# board %>% pin_write(data.frame(x = 1:3), "test-data")
-# board %>% pin_read("test-data")
+# board |> pin_write(data.frame(x = 1:3), "test-data")
+# board |> pin_read("test-data")
 
